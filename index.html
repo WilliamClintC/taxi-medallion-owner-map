@@ -3,7 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fig. 116 Owner, lender and agent locations (local only)</title>
+<title>Medallion owner locations</title>
+<meta name="description" content="Where NYC taxi medallion owners, lenders and managing agents filed from, and which federal bankruptcy court covers each address.">
+<meta name="theme-color" content="#0d0d0d">
+<link rel="icon" href="data:,">
+<script>
+// Visit log. #me tags this browser's visits as William (/William/... in GoatCounter); #me-off clears it.
+// Runs before count.js loads, so the path callback is in place for the first count.
+(function () {
+  var K = 'fig116_is_william';
+  function apply() {
+    var r = null;
+    try {
+      if (location.hash === '#me') { localStorage.setItem(K, '1'); r = 'on'; }
+      else if (location.hash === '#me-off') { localStorage.removeItem(K); r = 'off'; }
+      window.goatcounter = window.goatcounter || {};
+      if (localStorage.getItem(K) === '1') window.goatcounter.path = function (p) { return '/William' + p; };
+      else delete window.goatcounter.path;
+    } catch (e) { /* storage blocked: count as a normal visit */ }
+    return r;
+  }
+  window.FIG116_ME = apply();
+  // typing #me into the address bar of an open tab does not reload the page
+  window.addEventListener('hashchange', function () { var r = apply(); if (r && window.FIG116_TOAST) window.FIG116_TOAST(r); });
+})();</script>
+<script data-goatcounter="https://willcc.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <style>
 /* required styles */
 
@@ -742,133 +766,254 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .marker-cluster span {
 	line-height: 30px;
 	}
-:root { --bg:#f5f5f2; --panel:#fff; --ink:#1d2125; --muted:#5d646c; --rule:#d8dbd4; --chip:#eceee9; }
+/* Design plan (pass 5). Dark-first review page, dark only by choice (color-scheme dark).
+   Tokens: page #0d0d0d, surface #1a1a19, raised #242422, ink #f0efec, ink-2 #c3c2b7, muted #a3a29b,
+   hairline rgba(255,255,255,.10), accent #3987e5 (links #6da7ec, focus #86b6ef).
+   Groups by family: owners blue (3 lightness steps + circle / square / diamond), lenders orange (2 steps +
+   up / down triangle), agents teal (star). Base hues pass the dataviz validator (dark, all pairs); each family's
+   steps pass the ordinal check. Shading: blue ramp #306bc0 to #d3e6fb (lowest step 3.2:1 on the map background), lighter = more names.
+   Type: system sans, 1rem body, tabular figures in tables. Layout: answer and court bars on top, one filter row,
+   map with a side panel, counts table, drivers box, method folded at the bottom. */
+:root {
+  --bg:#0d0d0d; --surface:#1a1a19; --raised:#242422; --fg:#f0efec; --fg-2:#c3c2b7; --muted:#a3a29b;
+  --hair:rgba(255,255,255,.10); --hair-2:rgba(255,255,255,.18); --accent:#3987e5; --link:#6da7ec; --focus:#86b6ef;
+  --track:#2c2c2a; --bar:#3987e5; --bar-dim:#5d6470; --warn:#fab219; --warn-bg:rgba(250,178,25,.14);
+  --map-bg:#1c1d20;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px; --space-7:48px;
+  color-scheme: dark;
+}
 * { box-sizing:border-box; }
-body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
-header { padding:14px 20px 8px; border-bottom:1px solid var(--rule); background:var(--panel); }
-h1 { font-size:18px; margin:0 0 4px; font-weight:650; }
-h2 { font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:0 0 8px; font-weight:600; }
-.sub { margin:0; padding-left:18px; color:var(--muted); }
-.sub li { margin:1px 0; }
-.local { display:inline-block; font-size:11px; font-weight:600; padding:1px 7px; border-radius:3px; background:#fbe9d0; color:#7a4a00; margin-left:6px; vertical-align:2px; }
-main { padding:12px 20px 24px; display:flex; flex-direction:column; gap:14px; }
-section.card { background:var(--panel); border:1px solid var(--rule); border-radius:4px; padding:12px 14px; }
-.tablewrap { overflow-x:auto; }
-table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; }
-th, td { padding:5px 8px; border-bottom:1px solid var(--rule); text-align:right; white-space:nowrap; }
-th { font-size:12px; color:var(--muted); font-weight:600; vertical-align:bottom; }
-th.l, td.l { text-align:left; }
-td.span { text-align:left; color:var(--muted); white-space:normal; }
-tr.sum td { font-weight:650; border-top:2px solid var(--ink); }
-tr.nomap td { background:#fafaf8; }
-tr.nomap:first-of-type td, tr.firstnomap td { border-top:2px solid var(--rule); }
-.ic { display:inline-block; flex:none; width:14px; height:14px; margin-right:6px; vertical-align:-2px; }
-.grp-d { border-left:2px solid var(--rule); }
-.tnote { margin:8px 0 0; padding-left:18px; color:var(--muted); font-size:12.5px; }
-.grid { display:grid; grid-template-columns:minmax(0,1fr) 370px; gap:14px; align-items:start; }
-#map { height:72vh; min-height:460px; border:1px solid var(--rule); border-radius:4px; background:#e9ece8; }
-aside { display:flex; flex-direction:column; gap:14px; min-width:0; }
-.layers label { display:flex; align-items:center; gap:6px; padding:3px 0; cursor:pointer; }
-.layers .n { margin-left:auto; padding-left:6px; color:var(--muted); font-variant-numeric:tabular-nums; font-size:12px; text-align:right; white-space:nowrap; }
-.layers .nomap { display:flex; align-items:center; gap:6px; padding:3px 0; color:var(--muted); font-size:12.5px; }
-.ic.nm { border:1.5px dashed #9aa0a6; border-radius:2px; width:12px; height:12px; }
-.layers hr { border:0; border-top:1px solid var(--rule); margin:6px 0; }
-.btns { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-button { font:inherit; font-size:12.5px; padding:4px 10px; border:1px solid var(--rule); background:var(--chip); border-radius:3px; cursor:pointer; color:var(--ink); }
-button:hover { background:#e1e4dd; }
-.legend { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; font-size:12.5px; color:var(--muted); align-items:center; }
-.seg { display:inline-flex; border:1px solid var(--rule); border-radius:3px; overflow:hidden; margin:0 0 8px; }
-.seg button { border:0; border-radius:0; background:var(--panel); }
-.seg button[aria-pressed=true] { background:var(--ink); color:#fff; }
-.warn { color:#7a4a00; }
-.status { font-size:12px; color:var(--muted); margin-top:6px; }
-input[type=search] { width:100%; font:inherit; padding:5px 8px; border:1px solid var(--rule); border-radius:3px; }
-#results { list-style:none; margin:6px 0 0; padding:0; max-height:220px; overflow:auto; }
-#results li { padding:4px 2px; border-bottom:1px solid var(--rule); cursor:pointer; font-size:13px; }
-#results li:hover { background:var(--chip); }
-#results .meta { color:var(--muted); font-size:12px; }
-ul.b { margin:0; padding-left:18px; }
+html { -webkit-text-size-adjust:100%; }
+body { margin:0; background:var(--bg); color:var(--fg); font:1rem/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing:.005em; }
+[hidden] { display:none !important; }
+a { color:var(--link); text-underline-offset:2px; }
+:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
+::selection { background:#256abf; color:#fff; }
+.wrap { max-width:1360px; margin:0 auto; padding-inline:var(--space-4); }
+header.top { padding-block:var(--space-5) var(--space-3); }
+h1 { font-size:1.563rem; line-height:1.2; margin:0; font-weight:650; letter-spacing:-.02em; text-wrap:balance; }
+.lede { margin:var(--space-1) 0 0; color:var(--fg-2); max-width:75ch; }
+h2 { font-size:1.25rem; line-height:1.25; margin:0 0 var(--space-3); font-weight:600; }
+h3 { font-size:1rem; margin:0 0 var(--space-2); font-weight:600; }
+main { display:flex; flex-direction:column; gap:var(--space-6); padding-bottom:var(--space-6); }
+.panel { background:var(--surface); border:1px solid var(--hair); border-radius:10px; padding:var(--space-4); min-width:0; }
+.muted { color:var(--muted); }
+.small { font-size:.875rem; }
+ul.b { margin:0; padding-left:1.15em; }
 ul.b li { margin:2px 0; }
-.src { display:inline-block; font-size:11px; font-weight:600; padding:0 6px; border-radius:3px; background:var(--chip); color:var(--muted); margin-right:4px; }
-.tag { display:inline-block; font-size:11px; font-weight:600; padding:0 6px; border-radius:3px; background:#fbe9d0; color:#7a4a00; }
-.caveats { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:10px 18px; }
-.caveats h3 { font-size:13.5px; margin:0 0 3px; display:flex; align-items:center; }
-footer { padding:0 20px 28px; color:var(--muted); font-size:12.5px; }
-footer details { background:var(--panel); border:1px solid var(--rule); border-radius:4px; padding:8px 14px; margin-bottom:10px; }
-footer summary { cursor:pointer; font-weight:600; color:var(--ink); }
+ul.b li::marker { color:var(--muted); }
+
+/* answer */
+.answer { font-size:1.25rem; line-height:1.45; margin:0 0 var(--space-3); max-width:70ch; text-wrap:pretty; }
+.answer b { font-weight:650; }
+.facts { color:var(--fg-2); font-size:.9375rem; }
+
+/* filter row */
+fieldset.filters { border:0; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:var(--space-2) var(--space-5); align-items:center; }
+fieldset.filters legend { float:left; font-weight:600; margin-right:var(--space-2); padding:0; }
+.fam { display:flex; flex-wrap:wrap; gap:var(--space-2); align-items:center; }
+.fam > span { color:var(--muted); font-size:.875rem; margin-right:2px; }
+.chip { display:inline-flex; align-items:center; gap:6px; min-height:32px; padding:3px 10px 3px 6px; border:1px solid var(--hair-2); border-radius:16px; cursor:pointer; font-size:.9375rem; background:var(--surface); user-select:none; }
+.chip input { accent-color:var(--accent); width:16px; height:16px; margin:0; }
+.chip .n { color:var(--muted); font-variant-numeric:tabular-nums; font-size:.8125rem; }
+.chip:has(input:checked) { background:var(--raised); border-color:rgba(134,182,239,.55); }
+.chip:has(input:focus-visible) { outline:2px solid var(--focus); outline-offset:2px; }
+.ic { display:inline-block; flex:none; vertical-align:-2px; }
+
+/* bar chart */
+figure.bars { margin:0; }
+figure.bars figcaption { margin-bottom:var(--space-3); }
+.bars .title { font-weight:600; }
+.brow, .bars summary.brow { display:grid; grid-template-columns:minmax(0, 20rem) minmax(0, 1fr); gap:var(--space-1) var(--space-4); align-items:center; padding:6px 0; border-top:1px solid var(--hair); }
+.bars .brow:first-of-type { border-top:0; }
+.blab { min-width:0; }
+.blab .court { font-weight:550; }
+.blab .area { display:block; color:var(--muted); font-size:.8125rem; line-height:1.3; }
+.btrack { display:flex; align-items:center; gap:var(--space-2); min-width:0; }
+.bfill { height:18px; border-radius:0 4px 4px 0; background:var(--bar); flex:none; min-width:2px; }
+.brow.dim .bfill { background:var(--bar-dim); }
+.bval { font-variant-numeric:tabular-nums; white-space:nowrap; font-size:.9375rem; }
+.bval .pct { color:var(--muted); }
+.bars details > summary { list-style:none; cursor:pointer; }
+.bars details > summary::-webkit-details-marker { display:none; }
+.bars details > summary .court::after { content:" (show list)"; color:var(--link); font-weight:400; font-size:.875rem; }
+.bars details[open] > summary .court::after { content:" (hide list)"; }
+.bars details .inner { padding:var(--space-2) 0 var(--space-3); }
+.ncap { color:var(--muted); font-size:.875rem; margin-top:var(--space-2); }
+
+/* map */
+.mapgrid { display:grid; grid-template-columns:minmax(0, 1fr); gap:var(--space-4); }
+#map { height:70vh; min-height:420px; border-radius:10px; border:1px solid var(--hair); background:var(--map-bg); }
+.osm-dark { filter:invert(1) hue-rotate(180deg) saturate(.35) brightness(.78) contrast(.92); }
+.leaflet-container { font:inherit; background:var(--map-bg); }
+.leaflet-bar a, .leaflet-bar a:hover { background:var(--raised); color:var(--fg); border-bottom-color:var(--hair-2); }
+.leaflet-control-attribution { background:rgba(13,13,13,.75) !important; color:var(--muted); font-size:.75rem; }
+.leaflet-control-attribution a { color:var(--fg-2); }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background:var(--raised); color:var(--fg); box-shadow:0 2px 10px rgba(0,0,0,.6); }
+.leaflet-popup-content { margin:12px 14px; font-size:.875rem; line-height:1.45; }
+.leaflet-container a.leaflet-popup-close-button { color:var(--fg-2); }
+.leaflet-tooltip { background:var(--raised); color:var(--fg); border:1px solid var(--hair-2); box-shadow:0 2px 8px rgba(0,0,0,.5); font-size:.8125rem; }
+.leaflet-tooltip-top:before { border-top-color:var(--raised); }
+.maplegend { background:rgba(26,26,25,.92); border:1px solid var(--hair-2); border-radius:8px; padding:8px 10px; color:var(--fg); font-size:.8125rem; line-height:1.35; max-width:230px; }
+.maplegend .mt { font-weight:600; font-size:.875rem; }
+.maplegend .sw { display:flex; align-items:center; gap:6px; font-variant-numeric:tabular-nums; }
+.maplegend .sw i { width:14px; height:12px; border-radius:2px; flex:none; border:1px solid rgba(255,255,255,.15); }
+.maplegend .hint { color:var(--muted); margin-top:4px; }
+.status { font-size:.8125rem; color:var(--muted); margin-top:var(--space-2); }
+aside.side { display:flex; flex-direction:column; gap:var(--space-4); min-width:0; }
+.views { display:flex; flex-wrap:wrap; gap:var(--space-2); }
+button { font:inherit; font-size:.9375rem; min-height:32px; padding:4px 12px; border:1px solid var(--hair-2); background:var(--raised); color:var(--fg); border-radius:6px; cursor:pointer; }
+button:hover { background:#2e2e2b; border-color:rgba(255,255,255,.28); }
+.tog { display:flex; align-items:flex-start; gap:8px; padding:4px 0; cursor:pointer; }
+.tog input { accent-color:var(--accent); width:16px; height:16px; margin:3px 0 0; flex:none; }
+.tog .n { margin-left:auto; padding-left:8px; color:var(--muted); font-variant-numeric:tabular-nums; font-size:.8125rem; white-space:nowrap; }
+.keyrow { display:flex; flex-wrap:wrap; gap:var(--space-2) var(--space-3); font-size:.875rem; color:var(--fg-2); align-items:center; }
+.keyrow span { display:inline-flex; align-items:center; gap:4px; }
+input[type=search] { width:100%; font:inherit; font-size:1rem; padding:6px 10px; border:1px solid var(--hair-2); border-radius:6px; background:var(--bg); color:var(--fg); caret-color:var(--fg); }
+input[type=search]::placeholder { color:#8d8c86; }
+#results { list-style:none; margin:var(--space-2) 0 0; padding:0; max-height:240px; overflow:auto; }
+#results li { border-bottom:1px solid var(--hair); }
+#results button { width:100%; text-align:left; background:none; border:0; border-radius:0; padding:6px 2px; font-size:.9375rem; display:block; }
+#results button:hover { background:var(--raised); }
+#results .meta { color:var(--muted); font-size:.8125rem; display:block; }
+
+/* tables */
+.tablewrap { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; font-size:.9375rem; }
+caption { text-align:left; color:var(--muted); font-size:.875rem; padding-bottom:var(--space-2); caption-side:top; }
+th, td { padding:.45em .7em; border-bottom:1px solid var(--hair); text-align:right; vertical-align:top; }
+th { font-weight:600; vertical-align:bottom; background:rgba(255,255,255,.03); }
+th .area { display:block; font-weight:400; color:var(--muted); font-size:.75rem; line-height:1.25; max-width:13em; margin-left:auto; }
+th .tip { border-bottom:1px dotted var(--muted); cursor:help; }
+th.l, td.l { text-align:left; }
+td.l { white-space:nowrap; }
+tr.sum td { font-weight:650; border-top:2px solid var(--hair-2); }
+tr.sep td { border-top:2px solid var(--hair-2); }
+td.na { color:var(--muted); }
+.sticky1 th:first-child, .sticky1 td:first-child { position:sticky; left:0; background:var(--surface); z-index:1; }
+.sticky1 thead th:first-child { background:#222221; }
+.scrollhint { display:none; }
+#tipbox { position:fixed; left:var(--space-4); right:var(--space-4); bottom:var(--space-4); max-width:40rem; margin:0 auto; background:var(--raised); color:var(--fg); border:1px solid var(--hair-2); border-radius:8px; padding:10px 14px; z-index:1001; font-size:.875rem; box-shadow:0 4px 18px rgba(0,0,0,.6); }
+
+/* drivers + details */
+.duo { display:grid; grid-template-columns:minmax(0, 1fr); gap:var(--space-4); }
+#h-drivers + ul { max-width:75ch; }
+th.court { min-width:8.5em; }
+details.method { background:var(--surface); border:1px solid var(--hair); border-radius:10px; }
+details.method > summary { cursor:pointer; padding:var(--space-3) var(--space-4); font-weight:600; font-size:1.125rem; }
+details.method .body { padding:0 var(--space-4) var(--space-4); display:grid; grid-template-columns:repeat(auto-fit, minmax(min(26rem, 100%), 1fr)); gap:var(--space-5); }
+details.method section { min-width:0; }
+details.method ul.b { font-size:.9375rem; color:var(--fg-2); }
+details.method ul.b ul { margin:2px 0; padding-left:1.1em; }
+.src { display:inline-block; font-size:.75rem; font-weight:600; padding:0 6px; border-radius:4px; background:rgba(255,255,255,.08); color:var(--fg-2); margin-right:2px; white-space:nowrap; }
+.tag { display:inline-block; font-size:.75rem; font-weight:600; padding:0 6px; border-radius:4px; background:var(--warn-bg); color:var(--warn); }
+.warn { color:var(--warn); }
+footer { padding-block:0 var(--space-6); color:var(--muted); font-size:.875rem; }
+
+/* map internals */
 .clu { background:none; border:0; }
-.clu svg { display:block; filter:drop-shadow(0 0 1px rgba(0,0,0,.35)); }
-.clutip { font-size:12px; line-height:1.5; font-variant-numeric:tabular-nums; }
-.clutip .ic { vertical-align:-2px; }
-.osm-muted { filter:grayscale(.85) contrast(.9) brightness(1.05); }
-.dlabel { font:700 11px -apple-system, Helvetica, sans-serif; color:#222; text-shadow:0 0 3px #fff, 0 0 3px #fff; white-space:nowrap; }
-.pop b { font-size:13.5px; }
+.clu svg { display:block; filter:drop-shadow(0 0 2px rgba(0,0,0,.8)); }
+.dlabel .dl-in { display:inline-block; transform:translate(-50%, -50%); }
+.dlabel { font:600 12px system-ui, -apple-system, sans-serif; color:#e6e5e0; text-shadow:0 0 3px #000, 0 0 3px #000; white-space:nowrap; }
+.pop b.nm { font-size:.9375rem; }
 .pop ul { margin:4px 0 0; padding-left:16px; }
 .pop li { margin:1px 0; }
 .pop .k { color:var(--muted); }
-@media (max-width: 860px) {
-  .grid { grid-template-columns:1fr; }
-  #map { height:60vh; min-height:360px; }
-  main, header, footer { padding-left:10px; padding-right:10px; }
+.toast { position:fixed; left:50%; bottom:var(--space-5); transform:translateX(-50%); background:var(--raised); color:var(--fg); border:1px solid rgba(134,182,239,.6); border-radius:8px; padding:10px 16px; z-index:1000; box-shadow:0 4px 18px rgba(0,0,0,.6); max-width:calc(100vw - 32px); }
+
+@media (min-width: 40em) {
+  .wrap { padding-inline:var(--space-5); }
 }
+@media (min-width: 64em) {
+  .mapgrid { grid-template-columns:minmax(0, 1fr) 340px; align-items:start; }
+}
+@media (max-width: 40em) {
+  .maplegend { max-width:170px; padding:6px 8px; font-size:.75rem; }
+  .maplegend .hint { display:none; }
+  .brow, .bars summary.brow { grid-template-columns:minmax(0, 1fr); gap:2px; }
+  .answer { font-size:1.125rem; }
+  .scrollhint { display:inline; color:var(--fg-2); }
+  .sticky1 td.l:first-child, .sticky1 th.l:first-child { white-space:normal; min-width:8.5em; max-width:9.5em; }
+  #map { height:62vh; min-height:360px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
 </style>
-<script data-goatcounter="https://willcc.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </head>
 <body>
-<header>
-  <h1>Fig. 116 Where the owners, lenders and agents in our data filed from <span class="local">LOCAL ONLY: names with addresses</span></h1>
-  <ul class="sub" id="headline"></ul>
+<header class="top wrap">
+  <h1>Where medallion owners filed from, by bankruptcy court</h1>
+  <p class="lede">NYC taxi medallion owners, their lenders and Taxi and Limousine Commission (TLC) managing agents, at the addresses on their UCC lien filings. Figure 116.</p>
 </header>
-<main>
-  <section class="card">
-    <h2>Counts by group</h2>
-    <div class="seg" role="group" aria-label="Basis"><button data-basis="all" aria-pressed="true">All sources</button><button data-basis="lexis" aria-pressed="false">Lexis-backed only</button></div>
-    <div class="tablewrap"><table id="counts"></table></div>
-    <ul class="tnote" id="countnote"></ul>
+<main id="main" class="wrap">
+  <noscript><p>This page needs JavaScript to draw the counts and the map.</p></noscript>
+  <section class="panel" aria-labelledby="h-answer">
+    <h2 id="h-answer">The answer</h2>
+    <p class="answer" id="answer"></p>
+    <ul class="b facts" id="facts"></ul>
   </section>
-  <div class="grid">
-    <div>
-      <div id="map" role="region" aria-label="Map of filing addresses"></div>
-      <div class="status" id="status"></div>
+
+  <section aria-labelledby="h-courts" class="panel">
+    <h2 id="h-courts">Names by bankruptcy court</h2>
+    <fieldset class="filters" id="filters"><legend>Show</legend></fieldset>
+    <figure class="bars" style="margin-top:var(--space-4)">
+      <figcaption><span class="title" id="barsTitle"></span></figcaption>
+      <div id="bars" role="list"></div>
+      <div class="ncap" id="barsN"></div>
+    </figure>
+  </section>
+
+  <section aria-labelledby="h-map">
+    <h2 id="h-map">Map</h2>
+    <div class="mapgrid">
+      <div>
+        <div id="map" role="region" aria-label="Map of filing addresses"></div>
+        <div class="status" id="status" role="status"></div>
+      </div>
+      <aside class="side">
+        <div class="panel">
+          <h3>What the map shows</h3>
+          <ul class="b small" id="modeNote"></ul>
+          <div class="views" style="margin-top:var(--space-3)"><button type="button" data-view="all">All of the US</button><button type="button" data-view="nynj">NY and NJ</button><button type="button" data-view="nyc">NYC</button></div>
+        </div>
+        <div class="panel">
+          <h3>Street level only</h3>
+          <label class="tog"><input type="checkbox" id="dosonly" checked><span>Address spellings found only on NY DOS liens (often a Lexis address spelled differently)</span><span class="n" id="dosonly_n"></span></label>
+          <label class="tog"><input type="checkbox" id="atagent" checked><span>Owner addresses at a managing-agent office</span><span class="n" id="atagent_n"></span></label>
+          <label class="tog"><input type="checkbox" id="dlines" checked><span>Court district lines (NY, NJ, CT, PA)</span></label>
+          <p class="small muted" style="margin:var(--space-1) 0 0">Point = one owner at one address; an owner can have several.</p>
+          <div class="keyrow" id="preclegend" style="margin-top:var(--space-2)"></div>
+        </div>
+        <div class="panel">
+          <h3><label for="q">Find a name</label></h3>
+          <input type="search" id="q" placeholder="e.g. HOSSAIN" autocomplete="off" spellcheck="false">
+          <ul id="results" aria-live="polite"></ul>
+        </div>
+      </aside>
     </div>
-    <aside>
-      <section class="card layers">
-        <h2>Layers <span style="text-transform:none;letter-spacing:0;font-weight:400">(points | names)</span></h2>
-        <div id="layerlist"></div>
-        <hr>
-        <label title="NYS DOS rows found by a name search, with no Lexis record at that address"><input type="checkbox" id="dosonly" checked> Owner points from DOS name search only<span class="n" id="dosonly_n"></span></label>
-        <label title="Owner points at a TLC managing-agent office (same address after removing C/O, house-number hyphens and ordinals)"><input type="checkbox" id="atagent" checked> Owner points at a managing-agent office<span class="n" id="atagent_n"></span></label>
-        <label><input type="checkbox" id="dlines" checked> District lines (NY, NJ, CT, PA)</label>
-        <div class="legend" id="preclegend"></div>
-        <div class="btns"><button data-view="nyc">NYC</button><button data-view="nynj">NY + NJ</button><button data-view="all">All points</button></div>
-      </section>
-      <section class="card">
-        <h2>Find a name</h2>
-        <input type="search" id="q" placeholder="Owner, lender or agent (3+ letters)" autocomplete="off">
-        <ul id="results"></ul>
-      </section>
-      <section class="card">
-        <h2>Drivers (not mapped)</h2>
-        <ul class="b" id="drivers"></ul>
-        <div class="tablewrap"><table id="lic"></table></div>
-      </section>
-    </aside>
-  </div>
-  <section class="card">
-    <h2>Whose address is this</h2>
-    <div class="caveats" id="caveats"></div>
   </section>
+
+  <div class="duo">
+    <section class="panel" aria-labelledby="h-counts">
+      <h2 id="h-counts">Counts by group</h2>
+      <p class="ncap" style="margin:0 0 var(--space-2)">Each name counted once, at its latest mapped address. Hover, focus or tap a court for its counties.<span class="scrollhint"> Scroll the table sideways for the courts &rarr;</span></p>
+      <div class="tablewrap sticky1" tabindex="0" aria-label="Counts by group and court"><table id="counts"></table></div>
+      <p class="ncap" id="countsNote"></p>
+      <details class="small" style="margin-top:var(--space-3)"><summary style="cursor:pointer;color:var(--link)">Other courts, by group</summary><div class="tablewrap" tabindex="0" aria-label="Other courts by group" style="margin-top:var(--space-2)"><table id="others"></table></div></details>
+    </section>
+    <section class="panel" aria-labelledby="h-drivers">
+      <h2 id="h-drivers">Drivers</h2>
+      <ul class="b" id="drivers"></ul>
+    </section>
+  </div>
+
+  <details class="method" id="method">
+    <summary>Details and method</summary>
+    <div class="body" id="methodBody"></div>
+  </details>
 </main>
-<footer>
-  <details open>
-    <summary>Group rules (pass 2)</summary>
-    <ul class="b" id="grules"></ul>
-  </details>
-  <details open>
-    <summary>Sources and method</summary>
-    <ul class="b" id="notes"></ul>
-  </details>
-</footer>
+<footer class="wrap" id="foot"></footer>
+<div class="toast" id="toast" role="status" hidden></div>
+<div id="tipbox" role="status" hidden></div>
 <script>
 /* @preserve
  * Leaflet 1.9.4, a JS library for interactive maps. https://leafletjs.com
@@ -883,21 +1028,48 @@ footer summary { cursor:pointer; font-weight:600; color:var(--ink); }
 <script>
 (function () {
 const D = window.FIG116;
-if (!D) { document.getElementById('headline').innerHTML = '<li>Data file 116_owner_lender_locations_map_data.js not found next to this page.</li>'; return; }
-// Okabe-Ito categorical palette (CVD-checked: min CIEDE2000 10.9 under protan, deutan, tritan simulation); shape carries the group too
-const COL = {individual:'#0072B2', llc:'#E69F00', company_other:'#CC79A7', lender:'#009E73', lender_spv:'#D55E00', agent:'#1A1A1A'};
+if (!D) { document.getElementById('answer').textContent = 'Data file 116_owner_lender_locations_map_data.js not found next to this page.'; return; }
+
+// ---- visit-log confirmation (#me / #me-off, set up in <head>) ----
+window.FIG116_TOAST = state => {
+  const t = document.getElementById('toast');
+  t.textContent = state === 'on' ? "This browser's visits are now logged as William" : "This browser's visits are no longer logged as William";
+  t.hidden = false;
+  clearTimeout(t._h); t._h = setTimeout(() => { t.hidden = true; }, 5000);
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* file:// */ }
+};
+if (window.FIG116_ME) window.FIG116_TOAST(window.FIG116_ME);
+
+// ---- groups: colour by family, shape by group ----
+// owners blue #2f7fe0 / #7fb3ef / #c4dcf8 (ordinal check: pass), lenders orange #d95926 / #f4a27c (pass),
+// agents teal #199e70. Base hues #3987e5, #d95926, #199e70: dataviz validator, dark, all pairs, pass.
+const COL = {individual:'#7fb3ef', llc:'#c4dcf8', company_other:'#2f7fe0', lender:'#d95926', lender_spv:'#f4a27c', agent:'#199e70'};
 const SHAPE = {individual:'circle', llc:'square', company_other:'diamond', lender:'triangle', lender_spv:'triangle-down', agent:'star'};
 const SHAPE_NAME = {circle:'circle', square:'square', diamond:'diamond', triangle:'triangle', 'triangle-down':'down triangle', star:'star'};
+const FAMS = [['Owners', ['individual', 'llc', 'company_other']], ['Lenders', ['lender', 'lender_spv']], ['Agents', ['agent']]];
+const OWN = ['individual', 'llc', 'company_other'];
+const RAMP = ['#306bc0', '#4385dc', '#68a2ea', '#9cc5f3', '#d3e6fb'];   // >= 3:1 on --map-bg, adjacent OKLab L gap >= 0.08
 const SRC = {'Lexis':'Lexis UCC', 'DOS v1':'NYS DOS UCC v1', 'DOS v2':'NYS DOS UCC v2', 'DOS corp':'NYS DOS corporations', 'TLC':'TLC Authorized list'};
 const PREC = {exact:'exact', approximate:'approximate', 'ZIP-level':'ZIP-level'};
-const TIER = {lien: 'lien names a medallion <span class="src">Lexis</span>', family: 'lien not on Lexis; lender family mostly medallion loans <span class="src">Lexis</span>',
-  c2: '<span class="warn">Lexis lists this lien as non-medallion; kept (open question)</span>'};
+const TIER = {own_medallion: 'lien names this owner\'s medallion <span class="src">Lexis</span>', lien: 'lien names a medallion <span class="src">Lexis</span>', family: 'lien not on Lexis; lender family mostly medallion loans <span class="src">Lexis</span>',
+  c2: '<span class="warn">Lexis lists this lien as non-medallion; kept (open question)</span>',
+  lexis_lien: 'lien not in the DOS secured-party file; Lexis lien names a medallion <span class="src">Lexis</span>'};
 const fmt = n => (n === null || n === undefined) ? 'n/a' : Number(n).toLocaleString('en-US');
-const pct = (a, b) => b ? (100 * a / b).toFixed(1) + '%' : 'n/a';
+const pct1 = (a, b) => b ? (100 * a / b).toFixed(1) + '%' : 'n/a';
+const pct0 = (a, b) => b ? Math.round(100 * a / b) + '%' : 'n/a';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const dark = (hex, f) => '#' + [1, 3, 5].map(i => Math.round(parseInt(hex.substr(i, 2), 16) * f).toString(16).padStart(2, '0')).join('');
+const $ = id => document.getElementById(id);
 
-// one geometry for canvas markers, legend icons, popups and the counts table
+// ---- courts: full name and plain area, never a bare code ----
+const DI = D.district_info || {};
+const NONE = 'outside US / unknown';
+const short = s => s.replace(/ of New York$/, ' of NY').replace(/ of New Jersey$/, ' of NJ');
+const courtName = c => c === NONE || !c ? 'No US court found' : short((DI[c] || {}).label || c);
+const courtFull = c => c === NONE || !c ? 'No US court found (outside the US or county unknown)' : ((DI[c] || {}).label || c);
+const courtArea = c => c === NONE || !c ? 'outside the US, or county unknown' : ((DI[c] || {}).area || (DI[c] || {}).state || '');
+const courtTip = c => { const d = DI[c]; return d ? `${d.label}. Counties: ${d.counties.join(', ')}` : courtFull(c); };
+
+// ---- shapes: one geometry for canvas markers, chips, legend and popups ----
 function shapePts(shape, x, y, r) {
   const k = Math.PI / 180;
   if (shape === 'square') { const s = r * 0.86; return [[x - s, y - s], [x + s, y - s], [x + s, y + s], [x - s, y + s]]; }
@@ -907,17 +1079,12 @@ function shapePts(shape, x, y, r) {
   if (shape === 'star') { const p = []; for (let i = 0; i < 10; i++) { const a = (-90 + 36 * i) * k, rr = i % 2 ? r * 0.55 : r * 1.3; p.push([x + rr * Math.cos(a), y + rr * Math.sin(a)]); } return p; }
   return null;
 }
-function icon(g, size, opts) {
-  size = size || 14; opts = opts || {};
-  const c = COL[g] || '#888', r = size * 0.36, m = size / 2, fo = opts.fo === undefined ? 0.9 : opts.fo, w = opts.w || 1.2;
-  const pts = shapePts(SHAPE[g], m, m, r);
-  const body = pts ? `<polygon points="${pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')}"`
-    : `<circle cx="${m}" cy="${m}" r="${r}"`;
-  return `<svg class="ic" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-label="${esc(SHAPE_NAME[SHAPE[g]] || '')}">${body} fill="${c}" fill-opacity="${fo}" stroke="${dark(c, .6)}" stroke-width="${w}"/></svg>`;
+function icon(g, size) {
+  size = size || 16;
+  const c = COL[g], r = size * 0.36, m = size / 2, pts = shapePts(SHAPE[g], m, m, r);
+  const body = pts ? `<polygon points="${pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')}"` : `<circle cx="${m}" cy="${m}" r="${r}"`;
+  return `<svg class="ic" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${esc(SHAPE_NAME[SHAPE[g]])}">${body} fill="${c}" stroke="#0d0d0d" stroke-width="1"/></svg>`;
 }
-const sw = g => icon(g, 14);
-
-// canvas shape marker: CircleMarker geometry and hit test, drawn as the group's shape
 L.Canvas.include({
   _updateShape: function (layer) {
     if (!this._drawing || layer._empty()) return;
@@ -931,87 +1098,198 @@ L.Canvas.include({
 });
 const ShapeMarker = L.CircleMarker.extend({ options: {shape: 'circle'}, _updatePath: function () { this._renderer._updateShape(this); } });
 
+// ---- data views ----
 const G = D.groups, byG = {}; D.counts.all.forEach(c => byG[c.group] = c);
-const OWN = ['individual', 'llc', 'company_other'];
 const gOf = p => G[D.entities[p[0]][1]];
 const isDosOnly = p => !p[12] && OWN.includes(gOf(p));
 const isAtAgent = p => !!p[13];
-const nPts = {}, nDos = {}, nAg = {}; G.forEach(g => { nPts[g] = 0; nDos[g] = 0; nAg[g] = 0; });
-D.points.forEach(p => { const g = gOf(p); nPts[g]++; if (isDosOnly(p)) nDos[g]++; if (isAtAgent(p)) nAg[g]++; });
-const nynj = c => c.SDNY + c.EDNY + c.NDNY + c.WDNY + c['D.N.J.'];
-const dr = D.drivers, ls = dr.licence_state, lsTot = Object.values(ls).reduce((a, b) => a + b, 0);
+const latestPt = e => D.points[e[3]];
+const own = byG.owners_all, DC = D.district_cols, dr = D.drivers;
+const nynj = c => DC.reduce((a, d) => a + c[d], 0);
+const sel = new Set(OWN);   // groups shown: owners by default
 
-// ---- headline ----
-const own = byG.owners_all, ownL = D.counts.lexis.find(c => c.group === 'owners_all');
-document.getElementById('headline').innerHTML = [
-  `Owners mapped: <b>${fmt(own.names_mapped)}</b> of ${fmt(own.names_on_list)} on the bankruptcy name lists, by UCC debtor address`,
-  `Latest non-agent address in NY or NJ, all sources: <b>${fmt(nynj(own))}</b> of ${fmt(own.names_mapped)} (${pct(nynj(own), own.names_mapped)}); other districts ${fmt(own.other)}`,
-  `Lexis-backed only: <b>${fmt(nynj(ownL))}</b> of ${fmt(ownL.names_mapped)} (${pct(nynj(ownL), ownL.names_mapped)}); other districts ${fmt(ownL.other)}`,
-  `${fmt(own.latest_at_agent)} owners' latest address is a managing-agent office; their district uses the latest other address`,
-  `Drivers: no address in any source, not mapped`,
-  `N on map: ${fmt(D.points.length)} points, each one distinct (name, address)`
-].map(x => `<li>${x}</li>`).join('');
+// ---- the answer (all owners, fixed; computed from the counts table) ----
+(function answer() {
+  const nm = own.names_mapped, ny = nynj(own), up = own.NDNY + own.WDNY;
+  const byState = {};
+  Object.entries(own.other_detail || {}).forEach(([k, v]) => { const s = (DI[k] || {}).state || 'outside the US or unknown'; byState[s] = (byState[s] || 0) + v; });
+  const topS = Object.entries(byState).sort((a, b) => b[1] - a[1])[0] || ['', 0];
+  const mostly = topS[1] * 2 > own.other ? `mostly ${topS[0]}` : `largest share ${topS[0]}`;
+  const upTxt = up ? (up * 100 / nm < 1 ? `under 1% upstate NY (Northern and Western Districts), ` : `${pct0(up, nm)} upstate NY (Northern and Western Districts), `) : '';
+  $('answer').innerHTML = `<b>${pct0(ny, nm)} of the ${fmt(nm)} owners we could map last filed from New York or New Jersey</b>: `
+    + `${pct0(own.EDNY, nm)} ${esc(courtName('EDNY'))} (${esc(courtArea('EDNY'))}), `
+    + `${pct0(own.SDNY, nm)} ${esc(courtName('SDNY'))} (${esc(courtArea('SDNY'))}), `
+    + `${pct0(own['D.N.J.'], nm)} ${esc(courtName('D.N.J.'))}, ${upTxt}`
+    + `${pct0(own.other, nm)} elsewhere, ${esc(mostly)}.`;
+  $('facts').innerHTML = [
+    `Owner = a name on the medallion owner lists: ${fmt(own.names_on_list)} names, ${fmt(own.names_mapped)} with a mapped address`,
+    `Address = the debtor address on the owner's latest UCC lien filing`,
+    `Lien sources: LexisNexis UCC records <span class="src">Lexis</span> and NY Department of State UCC files <span class="src">NYS DOS</span>`,
+    `Not a current home address: median filing year ${D.median_filing_year}`,
+    `Latest address at a managing-agent office: the owner's latest other address is used (${fmt(own.latest_at_agent)} owners)`
+  ].map(x => `<li>${x}</li>`).join('');
+})();
 
-// ---- counts table ----
-const DC = D.district_cols, NCOL = 7 + DC.length;
-function drawCounts(basis) {
-  const BY = {}; D.counts[basis].forEach(c => BY[c.group] = c);
-  const own = BY.owners_all;
-  let h = '<thead><tr><th class="l">Group</th><th>Names on list</th><th>Names with an address</th><th>Names mapped</th><th>Addresses mapped</th>'
-    + DC.map((d, i) => `<th${i ? '' : ' class="grp-d"'}>${d}</th>`).join('') + '<th>Other</th><th class="grp-d">Any address outside NY/NJ</th></tr></thead><tbody>';
-  ['individual', 'llc', 'company_other', 'owners_all', 'lender', 'lender_spv', 'agent'].forEach(g => {
-    const c = BY[g]; if (!c) return;
-    const oth = Object.entries(c.other_detail || {}).map(([k, v]) => `${k} ${fmt(v)}`).join(', ');
-    const lab = g === 'llc' ? `${esc(c.label)} <span class="k" title="medallion-number-named ACQUISITION LLCs">(${fmt(c.acq_on_list)} ACQUISITION LLCs)</span>` : esc(c.label);
-    h += `<tr class="${g === 'owners_all' ? 'sum' : ''}"><td class="l">${g === 'owners_all' ? '' : sw(g)}${lab}</td>`
-      + `<td>${fmt(c.names_on_list)}</td><td>${fmt(c.names_with_address)}</td><td>${fmt(c.names_mapped)}</td><td>${fmt(c.addresses_mapped)}</td>`
-      + DC.map((d, i) => `<td${i ? '' : ' class="grp-d"'}>${fmt(c[d])}</td>`).join('')
-      + `<td title="${esc(oth)}">${fmt(c.other)}</td><td class="grp-d">${fmt(c.any_outside_ny_nj)}</td></tr>`;
-  });
-  h += `<tr class="nomap firstnomap"><td class="l"><span class="ic nm" title="no map element"></span>TLC drivers</td><td>${fmt(dr.drivers_listed)}</td><td>${fmt(dr.drivers_with_address)}</td><td>0</td>`
-    + `<td class="span" colspan="${NCOL - 4}">${fmt(dr.drivers_listed)} hack licences, ${fmt(dr.drivers_named)} named, 0 with an address (no source holds one) <span class="src">drivers_taxi.csv</span></td></tr>`;
-  h += `<tr class="nomap"><td class="l"><span class="ic nm" title="no map element"></span>Crash drivers</td><td>n/a</td><td>0</td><td>0</td>`
-    + `<td class="span" colspan="${NCOL - 4}">${fmt(dr.crash_driver_rows)} driver rows on ${fmt(dr.crash_medallions)} medallions, ${dr.crash_years.join(' to ')}; licence state only (NY ${pct(ls.NY, lsTot)}, NJ ${pct(ls.NJ, lsTot)}); crash county not linkable <span class="src">NYS DMV crashes</span></td></tr>`;
-  document.getElementById('counts').innerHTML = h + '</tbody>';
-  const od = Object.entries(own.other_detail || {}), odTop = od.slice(0, 8), odRest = od.slice(8);
-  const otherOwn = odTop.map(([k, v]) => `${esc(k)} ${fmt(v)}`).join(', ')
-    + (odRest.length ? `, and ${fmt(odRest.reduce((a, x) => a + x[1], 0))} more in ${odRest.length} other districts` : '');
-  const dosOnly = D.points.filter(isDosOnly).length, ownPts = D.points.filter(p => OWN.includes(gOf(p))).length;
-  const dup = OWN.reduce((a, g) => a + BY[g].names_on_list - BY[g].distinct_names, 0);
-  const lt = BY.lender.med_tier_points || {};
-  document.getElementById('countnote').innerHTML = [
-    basis === 'all' ? 'Basis: all sources (Lexis UCC, NYS DOS UCC v1 and v2, NYS DOS corporations, TLC)'
-      : 'Basis: Lexis-backed only; NYS DOS name-search rows count only at an address the same owner has on a Lexis record',
-    'District columns: each name once, at its latest mapped address that is not a managing-agent office (else its latest address)',
-    `Latest address is a managing-agent office: ${fmt(own.latest_at_agent)} owners; ${fmt(own.only_agent_address)} have no other mapped address`,
-    `Other districts, all owners: ${otherOwn || 'none'}`,
-    `<span class="warn">DOS owner rows: name search only; medallion column is the searched owner's, not lien collateral</span>`,
-    `<span class="warn">DOS-only owner points (may be a same-name stranger): ${fmt(dosOnly)} of ${fmt(ownPts)} (${pct(dosOnly, ownPts)})</span>`,
-    basis === 'all' ? `Owners in other districts resting only on DOS name-search rows: ${fmt(own.other_dos_only)} of ${fmt(own.other)}` : '',
-    'Any address outside NY/NJ: at least one mapped address outside SDNY, EDNY, NDNY, WDNY, D.N.J., any year',
-    `Names on list = list rows; ${fmt(dup)} rows repeat a name (token set) and count twice`,
-    `Lenders: secured parties passing the medallion test; points by test: lien ${fmt(lt.lien || 0)}, family ${fmt(lt.family || 0)}, Lexis non-medallion kept ${fmt(lt.c2 || 0)}`,
-    `UCC lien matched (stage 159): individuals ${fmt(BY.individual.ucc_lien_matched)}, companies ${fmt(BY.llc.ucc_lien_matched + BY.company_other.ucc_lien_matched)}`
-  ].filter(x => x).map(x => `<li>${x}</li>`).join('');
+// ---- filter chips (scope: bar chart and map) ----
+$('filters').insertAdjacentHTML('beforeend', FAMS.map(([fam, gs]) => `<div class="fam"><span>${fam}</span>` + gs.map(g =>
+  `<label class="chip"><input type="checkbox" id="lay_${g}" ${sel.has(g) ? 'checked' : ''}>${icon(g)}${esc(D.group_label[g])}<span class="n">${fmt(byG[g].names_mapped)}</span></label>`).join('') + '</div>').join(''));
+G.forEach(g => $('lay_' + g).addEventListener('change', e => { e.target.checked ? sel.add(g) : sel.delete(g); updateAll(); }));
+const selLabel = () => { const gs = G.filter(g => sel.has(g)); if (!gs.length) return 'no group'; if (gs.length === 3 && OWN.every(g => sel.has(g))) return 'all owners'; return gs.map(g => D.group_label[g]).join(', '); };
+
+// ---- bar chart: names per court at their latest address, groups shown ----
+function courtCounts() {
+  const n = {}; let tot = 0;
+  D.entities.forEach(e => { if (!sel.has(G[e[1]])) return; const d = latestPt(e)[10] || NONE; n[d] = (n[d] || 0) + 1; tot++; });
+  return [n, tot];
 }
-drawCounts('all');
-document.querySelectorAll('[data-basis]').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('[data-basis]').forEach(x => x.setAttribute('aria-pressed', x === b));
-  drawCounts(b.dataset.basis);
-}));
+function drawBars() {
+  const [n, tot] = courtCounts();
+  $('barsTitle').textContent = `Latest address: ${selLabel()}`;
+  if (!tot) { $('bars').innerHTML = '<p class="muted">No group selected. Tick a group above.</p>'; $('barsN').textContent = ''; return; }
+  const keep = new Set(DC);
+  Object.entries(n).filter(([k]) => !keep.has(k) && k !== NONE).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([k]) => keep.add(k));
+  const rows = [...keep].map(k => [k, n[k] || 0]).sort((a, b) => b[1] - a[1]);
+  const rest = Object.entries(n).filter(([k]) => !keep.has(k)).sort((a, b) => b[1] - a[1]);
+  const restN = rest.reduce((a, x) => a + x[1], 0);
+  const max = Math.max(...rows.map(r => r[1]), restN, 1);
+  const bar = (v, dim) => `<div class="btrack"><div class="bfill" style="width:calc((100% - 15ch) * ${(v / max).toFixed(4)})"></div><span class="bval">${fmt(v)} <span class="pct">(${pct1(v, tot)})</span></span></div>`;
+  let h = rows.map(([k, v]) => `<div class="brow" role="listitem"><div class="blab" title="${esc(courtTip(k))}" data-tip="${esc(courtTip(k))}"><span class="court">${esc(courtName(k))}</span><span class="area">${esc(courtArea(k))}</span></div>${bar(v)}</div>`).join('');
+  if (restN) h += `<details role="listitem"><summary class="brow dim"><div class="blab"><span class="court">All other courts</span><span class="area">${fmt(rest.length)} more court${rest.length > 1 ? 's' : ''}</span></div>${bar(restN, true)}</summary>`
+    + `<div class="inner tablewrap"><table><thead><tr><th class="l" scope="col">Court</th><th class="l" scope="col">State</th><th scope="col">Names</th></tr></thead><tbody>`
+    + rest.map(([k, v]) => `<tr><td class="l" title="${esc(courtTip(k))}">${esc(courtFull(k))}</td><td class="l">${esc((DI[k] || {}).state || '')}</td><td>${fmt(v)}</td></tr>`).join('') + '</tbody></table></div></details>';
+  $('bars').innerHTML = h;
+  $('barsN').textContent = `N = ${fmt(tot)} names, each counted once at its latest mapped address`;
+}
+
+// ---- counts table: group, names on lists, names mapped, courts ----
+const TCOLS = ['EDNY', 'SDNY', 'D.N.J.', 'NDNY', 'WDNY'];
+const EXS = (D.excluded || []).find(x => x.group === 'excl_series'), lsS0 = D.lender_stats || {};
+(function drawCounts() {
+  const th = c => `<th scope="col" class="court"><span class="tip" tabindex="0" title="${esc(courtTip(c))}" data-tip="${esc(courtTip(c))}">${esc(courtName(c))}</span><span class="area">${esc(courtArea(c))}</span></th>`;
+  let h = ''
+    + `<thead><tr><th class="l" scope="col">Group</th><th scope="col">Names on our lists</th><th scope="col">Names we could map</th>`
+    + TCOLS.map(th).join('') + `<th scope="col">Other courts<span class="area">see the list below</span></th></tr></thead><tbody>`;
+  ['individual', 'llc', 'company_other', 'owners_all', 'lender', 'lender_spv', 'agent'].forEach(g => {
+    const c = byG[g]; if (!c) return;
+    const cls = g === 'owners_all' ? 'sum' : g === 'lender' ? 'sep' : '';
+    const lab = g === 'owners_all' ? 'All owners' : `${icon(g)} ${esc(c.label)}`;
+    h += `<tr class="${cls}"><td class="l">${lab}</td>`
+      + (g === 'lender_spv' && EXS ? `<td title="Names on the owner lists, spelling variants included">${fmt(EXS.names_on_list)}&dagger;</td>`
+        : c.names_on_list == null ? '<td class="na" title="Not from a list: found on the liens or the TLC agent files">no list</td>' : `<td>${fmt(c.names_on_list)}</td>`)
+      + `<td>${fmt(c.names_mapped)}</td>` + TCOLS.map(d => `<td>${fmt(c[d])}</td>`).join('') + `<td>${fmt(c.other)}</td></tr>`;
+  });
+  $('counts').innerHTML = h + '</tbody>';
+  if (EXS) $('countsNote').innerHTML = `&dagger; Series LLCs: ${fmt(EXS.names_on_list)} names on the owner lists (spelling variants included). Mapped = ${fmt(lsS0.spv_series)} NY DOS corporations holding a listed medallion + ${fmt(lsS0.spv_no_medallion)} DePalma acquisition vehicles = ${fmt(byG.lender_spv.names_mapped)}.`;
+  // other courts by group
+  const GS = ['owners_all', 'lender', 'lender_spv', 'agent'];
+  const all = {}; GS.forEach(g => Object.entries(byG[g].other_detail || {}).forEach(([k, v]) => { all[k] = (all[k] || 0) + v; }));
+  const ks = Object.keys(all).sort((a, b) => all[b] - all[a]);
+  $('others').innerHTML = `<thead><tr><th class="l" scope="col">Court</th>${GS.map(g => `<th scope="col">${esc(g === 'owners_all' ? 'All owners' : byG[g].label)}</th>`).join('')}</tr></thead><tbody>`
+    + ks.map(k => `<tr><td class="l" title="${esc(courtTip(k))}">${esc(courtFull(k))}</td>${GS.map(g => `<td>${fmt((byG[g].other_detail || {})[k] || 0)}</td>`).join('')}</tr>`).join('') + '</tbody>';
+})();
+
+// tap or click a court name for its counties (title tooltips do not show on a phone)
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tip]'), box = $('tipbox');
+  if (!t) { box.hidden = true; return; }
+  box.textContent = t.dataset.tip; box.hidden = false;
+});
+
+// ---- drivers ----
+(function () {
+  const ls = dr.licence_state, tot = Object.values(ls).reduce((a, b) => a + b, 0);
+  $('drivers').innerHTML = [
+    '<b>Not on the map:</b> no source holds a driver address',
+    `TLC taxi driver licences (hack licences): ${fmt(dr.drivers_listed)}, ${fmt(dr.drivers_named)} with a name on file <span class="src">TLC</span>`,
+    `Crash reports, ${dr.crash_years.join(' to ')}: driver's licence state only <span class="src">NYS DMV</span> (NY Department of Motor Vehicles)`,
+    `NY ${pct1(ls.NY, tot)}, NJ ${pct1(ls.NJ, tot)}, PA ${pct1(ls.PA, tot)}, other or blank ${pct1(tot - ls.NY - ls.NJ - ls.PA, tot)} of ${fmt(tot)} taxi drivers in crashes (counted once per crash)`,
+    'No crash county: the state crash-location file cannot be linked to these reports'
+  ].map(x => `<li>${x}</li>`).join('');
+})();
 
 // ---- map ----
-const map = L.map('map', {preferCanvas: true, worldCopyJump: true});
-const VIEWS = {nyc: [[40.48, -74.28], [40.93, -73.68]], nynj: [[38.9, -79.8], [45.05, -71.8]]};
-map.fitBounds(VIEWS.nyc);
-const status = document.getElementById('status');
+const map = L.map('map', {preferCanvas: true, worldCopyJump: true, zoomSnap: 1});
+const VIEWS = {nyc: [[40.49, -74.26], [40.92, -73.70]], nynj: [[38.9, -79.8], [45.05, -71.8]]};
+// NYC opens at hexagon zoom (10) or closer, on narrow screens too
+const showNYC = () => map.setView(L.latLngBounds(VIEWS.nyc).getCenter(), Math.max(10, map.getBoundsZoom(VIEWS.nyc)));
+showNYC();
 let tileErr = 0, tileOk = 0;
-const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19, attribution: '&copy; OpenStreetMap contributors', className: 'osm-muted'}).addTo(map);
+const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; OpenStreetMap contributors', className: 'osm-dark'}).addTo(map);
 tiles.on('tileerror', () => { tileErr++; setStatus(); });
 tiles.on('tileload', () => { tileOk++; setStatus(); });
+map.createPane('shade'); map.getPane('shade').style.zIndex = 350;
+const shadeR = L.canvas({pane: 'shade', padding: 0.3});
 
-// one cluster group for all groups, so a bubble shows its group mix (donut, colour per group)
+// scale mode by zoom
+const Z_HEX = 10, Z_PTS = 14;
+const modeOf = z => z < Z_HEX ? 'county' : z < Z_PTS ? 'hex' : 'points';
+let mode = null;
+
+// class breaks: quantiles of the nonzero counts, rounded to 1-2-5 numbers
+function breaks(vals) {
+  const v = vals.filter(x => x > 0).sort((a, b) => a - b); if (!v.length) return [];
+  const nice = x => { if (x <= 1) return 1; const e = Math.pow(10, Math.floor(Math.log10(x))), m = x / e; return (m < 1.5 ? 1 : m < 3 ? 2 : m < 7 ? 5 : 10) * e; };
+  const b = [...new Set([0.35, 0.65, 0.85, 0.95].map(f => nice(v[Math.min(v.length - 1, Math.floor(f * v.length))])))].sort((a, b) => a - b);
+  return b.filter(x => x < v[v.length - 1]);
+}
+const classOf = (n, br) => { let i = 0; while (i < br.length && n > br[i]) i++; return i; };
+const rampFor = br => { const k = br.length + 1; return RAMP.slice(RAMP.length - k); };
+function scaleRows(br) {
+  const cols = rampFor(br), out = [];
+  for (let i = 0; i <= br.length; i++) {
+    const lo = i ? br[i - 1] + 1 : 1, hi = br[i];
+    out.push([cols[i], i === br.length ? `${fmt(lo)} or more` : lo === hi ? fmt(lo) : `${fmt(lo)} to ${fmt(hi)}`]);
+  }
+  return out;
+}
+
+// counties
+const cntyCount = () => { const n = {}; D.entities.forEach(e => { if (!sel.has(G[e[1]])) return; const c = latestPt(e)[17]; if (c) n[c] = (n[c] || 0) + 1; }); return n; };
+let cnty = null, cntyBr = [];
+function drawCounties() {
+  const n = cntyCount(); cntyBr = breaks(Object.values(n)); const cols = rampFor(cntyBr);
+  if (cnty) map.removeLayer(cnty);
+  cnty = L.geoJSON(D.county_shapes, {renderer: shadeR, pane: 'shade',
+    style: f => { const v = n[f.properties.geoid] || 0; return v ? {fillColor: cols[classOf(v, cntyBr)], fillOpacity: .9, color: '#0d0d0d', weight: .6, opacity: .7} : {fillOpacity: 0, opacity: 0, weight: 0}; },
+    onEachFeature: (f, l) => { const v = n[f.properties.geoid] || 0; if (!v) return;
+      l.bindTooltip(`<b>${esc(f.properties.name)}</b><br>${fmt(v)} name${v > 1 ? 's' : ''} (latest address)<br>${esc(courtFull(f.properties.district))}`, {sticky: true}); }
+  });
+  cnty.addTo(map);
+}
+
+// hexagons about 0.5 mile across at NYC's latitude (Web Mercator metres scaled by 1/cos 40.7)
+const HEX_W = 804.67 / Math.cos(40.7 * Math.PI / 180), HEX_R = HEX_W / Math.sqrt(3);
+const proj = ll => L.CRS.EPSG3857.project(L.latLng(ll[0], ll[1]));
+const hexOf = (x, y) => {   // pointy-top axial coordinates, cube rounding
+  const q = (Math.sqrt(3) / 3 * x - y / 3) / HEX_R, r = (2 / 3 * y) / HEX_R;
+  let rx = Math.round(q), rz = Math.round(r), ry = Math.round(-q - r);
+  const dx = Math.abs(rx - q), dz = Math.abs(rz - r), dy = Math.abs(ry + q + r);
+  if (dx > dy && dx > dz) rx = -ry - rz; else if (dy <= dz) rz = -rx - ry;
+  return [rx, rz];
+};
+const hexPoly = (q, r) => {
+  const cx = HEX_R * Math.sqrt(3) * (q + r / 2), cy = HEX_R * 1.5 * r, out = [];
+  for (let i = 0; i < 6; i++) { const a = Math.PI / 180 * (60 * i - 30); out.push(L.CRS.EPSG3857.unproject(L.point(cx + HEX_R * Math.cos(a), cy + HEX_R * Math.sin(a)))); }
+  return out;
+};
+const entXY = D.entities.map(e => { const p = latestPt(e); return proj([p[1], p[2]]); });
+let hex = null, hexBr = [];
+function drawHex() {
+  const bins = {};
+  D.entities.forEach((e, i) => { const g = G[e[1]]; if (!sel.has(g)) return; const [q, r] = hexOf(entXY[i].x, entXY[i].y), k = q + ',' + r;
+    const b = bins[k] || (bins[k] = {q, r, n: 0, g: {}}); b.n++; b.g[g] = (b.g[g] || 0) + 1; });
+  const list = Object.values(bins); hexBr = breaks(list.map(b => b.n)); const cols = rampFor(hexBr);
+  if (hex) map.removeLayer(hex);
+  hex = L.layerGroup(list.map(b => {
+    const pg = L.polygon(hexPoly(b.q, b.r), {renderer: shadeR, pane: 'shade', fillColor: cols[classOf(b.n, hexBr)], fillOpacity: .9, color: '#0d0d0d', weight: .5, opacity: .6});
+    pg.bindTooltip(`<b>${fmt(b.n)} name${b.n > 1 ? 's' : ''}</b> (latest address)<br>` + G.filter(g => b.g[g]).map(g => `${icon(g, 12)} ${esc(D.group_label[g])}: ${fmt(b.g[g])}`).join('<br>') + '<br><span style="color:var(--muted)">Click to zoom in</span>', {sticky: true});
+    pg.on('click', e => map.setView(e.latlng, Z_PTS));
+    return pg;
+  }));
+  hex.addTo(map);
+}
+
+// individual addresses (built on first street-level view)
 function donut(counts, total) {
   const size = total < 10 ? 30 : total < 100 ? 36 : total < 1000 ? 42 : 48, r = size / 2, ri = r * 0.58;
   let a0 = -Math.PI / 2, segs = '';
@@ -1023,195 +1301,265 @@ function donut(counts, total) {
     segs += `<path d="M${P(r, a0)} A${r},${r} 0 ${big} 1 ${P(r, a1)} L${P(ri, a1)} A${ri},${ri} 0 ${big} 0 ${P(ri, a0)} Z" fill="${COL[g]}"/>`;
     a0 = a1;
   });
-  const fs = total >= 10000 ? 10 : 11;
   return L.divIcon({className: 'clu', iconSize: [size, size],
-    html: `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${segs}<circle cx="${r}" cy="${r}" r="${ri}" fill="#fff"/>`
-      + `<text x="${r}" y="${r}" text-anchor="middle" dominant-baseline="central" font-family="-apple-system,Helvetica,sans-serif" font-size="${fs}" font-weight="700" fill="#1d2125">${total >= 10000 ? Math.round(total / 1000) + 'k' : total}</text></svg>`});
+    html: `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${segs}<circle cx="${r}" cy="${r}" r="${ri}" fill="#1a1a19"/>`
+      + `<text x="${r}" y="${r}" text-anchor="middle" dominant-baseline="central" font-family="system-ui,-apple-system,sans-serif" font-size="${total >= 10000 ? 10 : 11}" font-weight="700" fill="#f0efec">${total >= 10000 ? Math.round(total / 1000) + 'k' : total}</text></svg>`});
 }
-const clu = L.markerClusterGroup({chunkedLoading: true, maxClusterRadius: z => z >= 17 ? 6 : z >= 15 ? 20 : 44, spiderfyOnMaxZoom: true, showCoverageOnHover: false,
-  spiderLegPolylineOptions: {weight: 1, color: '#9aa0a6', opacity: 0.6},
+const clu = L.markerClusterGroup({chunkedLoading: true, maxClusterRadius: z => z >= 16 ? 8 : z >= 15 ? 16 : 28, spiderfyOnMaxZoom: true, showCoverageOnHover: false,
+  spiderLegPolylineOptions: {weight: 1, color: '#c3c2b7', opacity: 0.6},
   iconCreateFunction: c => { const n = {}; c.getAllChildMarkers().forEach(m => { n[m.options.grp] = (n[m.options.grp] || 0) + 1; }); return donut(n, c.getChildCount()); }});
 clu.on('clustermouseover', e => {
   const n = {}; e.layer.getAllChildMarkers().forEach(m => { n[m.options.grp] = (n[m.options.grp] || 0) + 1; });
-  const html = G.filter(g => n[g]).map(g => `<div>${sw(g)}${esc(D.group_label[g])}: <b>${fmt(n[g])}</b></div>`).join('');
-  e.layer.bindTooltip(html, {direction: 'top', className: 'clutip', offset: [0, -14]}).openTooltip();
+  e.layer.bindTooltip(G.filter(g => n[g]).map(g => `${icon(g, 12)} ${esc(D.group_label[g])}: <b>${fmt(n[g])}</b>`).join('<br>'), {direction: 'top', offset: [0, -14]}).openTooltip();
 });
 clu.on('clustermouseout', e => e.layer.unbindTooltip());
 
 function popup(p) {
   const e = D.entities[p[0]], g = gOf(p), tags = (e[2] || '').split('|');
   const yrs = p[5] && p[6] && p[5] !== p[6] ? `${p[5]} to ${p[6]}` : (p[5] || p[6] || 'n/a');
-  const src = p[8].split('|').map(s => `<span class="src">${esc(SRC[s] || s)}</span>`).join(' + ');
+  const src = p[8].split('|').map(s => `<span class="src">${esc(SRC[s] || s)}</span>`).join(' ');
   let med;
   if (g === 'lender') med = `<li><span class="k">Medallions on linked liens:</span> ${fmt(+p[4])}</li>`;
   else {
     const m = p[4] ? p[4].split('|') : [];
-    const lab = g === 'agent' ? 'Medallions managed' : g === 'lender_spv' ? 'Medallions held (owner list)' : p[12] ? 'Medallions' : "Owner's medallions (list, not lien collateral)";
+    const lab = g === 'agent' ? 'Medallions managed' : g === 'lender_spv' ? 'Medallions held (owner list)' : 'Medallions (lien collateral)';
     med = `<li><span class="k">${lab}:</span> ${m.length ? esc(m.slice(0, 14).join(', ')) + (m.length > 14 ? ` +${m.length - 14} more` : '') : 'n/a'}</li>`;
   }
-  const yl = g === 'agent' ? 'Years listed at this address' : (p[8] === 'DOS corp' ? 'Formed' : 'Filing years at this address');
+  const yl = g === 'agent' ? 'Years listed here' : (p[8] === 'DOS corp' ? 'Formed' : 'Filing years here');
   const raw = p[11] ? `<li><span class="k">${g === 'lender' ? 'As filed' : g === 'lender_spv' ? 'Process name' : 'Name as filed'}:</span> ${esc(p[11].replace(/^process: /, '').split('|').join('; '))}</li>` : '';
   let link = '';
-  if (g === 'lender') link = `<li><span class="k">Link:</span> ${p[12] ? 'on a lien whose debtor address is on Lexis' : '<span class="warn">name-search liens only (DOS)</span>'}</li>`
+  if (g === 'lender') link = `<li><span class="k">Link:</span> ${p[12] ? 'on a lien whose debtor address is on Lexis' : '<span class="warn">name-search liens only (NYS DOS)</span>'}</li>`
     + `<li><span class="k">Medallion test:</span> ${TIER[p[14]] || 'n/a'}</li>`;
-  else if (g === 'lender_spv') link = '<li><span class="k">Link:</span> lender-held series LLC; address is the service-of-process address</li>';
-  else if (OWN.includes(g)) link = `<li><span class="k">Link:</span> ${p[12] ? 'collateral names the medallion (Lexis)' : '<span class="warn">name search only (DOS); may be a same-name stranger</span>'}</li>`;
+  else if (g === 'lender_spv') link = '<li><span class="k">Address:</span> service-of-process address of a lender-held series LLC</li>';
+  else if (OWN.includes(g)) {
+    if (!p[12]) link += `<li><span class="k">Address spelling:</span> NYS DOS only, on no Lexis record of the owner</li>`;
+    if (/DOS v/.test(p[8])) {
+      const q = p[15] ? p[15].split('|') : [];
+      link += `<li><span class="k">NYS DOS lien's lender:</span> ${q.length ? esc(q.slice(0, 4).join('; ')) + (q.length > 4 ? ` +${q.length - 4} more` : '') : 'n/a'} <span class="src">Lexis</span></li>`
+        + `<li><span class="k">Medallion test:</span> ${TIER[p[14]] || 'n/a'}</li>`;
+    }
+  }
   const flags = [p[13] ? '<span class="tag">At a managing-agent office</span>' : '', tags.includes('also_agent') ? '<span class="tag">Also a TLC managing agent</span>' : '',
     tags.includes('acq') ? '<span class="tag">Medallion-number ACQUISITION LLC</span>' : ''].filter(x => x).join(' ');
-  return `<div class="pop"><b>${esc(e[0])}</b><ul>`
-    + `<li>${sw(g)}${esc(D.group_label[g])}</li>` + (flags ? `<li>${flags}</li>` : '')
-    + `<li><span class="k">Address:</span> ${esc(p[3])}</li>` + med
+  const isLatest = D.points[e[3]] === p;
+  return `<div class="pop"><b class="nm">${esc(e[0])}</b><ul>`
+    + `<li>${icon(g, 14)} ${esc(D.group_label[g])}</li>` + (flags ? `<li>${flags}</li>` : '')
+    + `<li><span class="k">Address:</span> ${esc(p[3])}${isLatest ? ' <span class="src">latest, counted</span>' : ''}</li>`
+    + `<li><span class="k">Bankruptcy court:</span> ${esc(courtFull(p[10] || NONE))}</li>` + med
     + `<li><span class="k">${yl}:</span> ${esc(yrs)} (${fmt(p[7])} record${p[7] > 1 ? 's' : ''})</li>`
     + `<li><span class="k">Source:</span> ${src}</li>` + raw + link
-    + `<li><span class="k">Precision:</span> ${esc(PREC[p[9]] || p[9])}</li>`
-    + `<li><span class="k">District:</span> ${esc(p[10] || 'none (outside US or unknown county)')}</li></ul></div>`;
+    + `<li><span class="k">Geocode:</span> ${esc(PREC[p[9]] || p[9])}</li></ul></div>`;
 }
 const SIZE = {agent: 8.5, lender_spv: 5.5};
-const HALO = {agent: '#ffffff'};
-const markers = [], markersOf = {};
-D.points.forEach(p => {
-  const g = gOf(p), c = COL[g], r = SIZE[g] || 6;
-  const style = p[9] === 'exact' ? {fillOpacity: .85, weight: 1, radius: r}
-    : p[9] === 'approximate' ? {fillOpacity: .4, weight: 1.2, radius: r} : {fillOpacity: 0, weight: 2, radius: r + 1};
-  const halo = HALO[g] && p[9] !== 'ZIP-level';   // a hollow ZIP-level star keeps its dark outline
-  const m = new ShapeMarker([p[1], p[2]], Object.assign({color: halo ? HALO[g] : dark(c, .6), fillColor: c, shape: SHAPE[g], grp: g}, style, halo ? {weight: 2} : {}));
-  m.bindPopup(() => popup(p), {maxWidth: Math.min(330, window.innerWidth - 120), autoPanPadding: [10, 10]});
-  m._fp = p; m._vis = false;
-  markers.push(m);
-  (markersOf[p[0]] = markersOf[p[0]] || []).push(m);
-});
-const visible = m => document.getElementById('lay_' + m.options.grp).checked
-  && (document.getElementById('dosonly').checked || !isDosOnly(m._fp))
-  && (document.getElementById('atagent').checked || !isAtAgent(m._fp));
-function refresh() {
+let markers = null; const markersOf = {};
+function buildMarkers() {
+  if (markers) return;
+  markers = [];
+  D.points.forEach(p => {
+    const g = gOf(p), c = COL[g], r = SIZE[g] || 6;
+    const st = p[9] === 'exact' ? {fillOpacity: .9, weight: 1, radius: r, color: '#0d0d0d'}
+      : p[9] === 'approximate' ? {fillOpacity: .45, weight: 1.2, radius: r, color: c} : {fillOpacity: 0, weight: 2, radius: r + 1, color: c};
+    if (g === 'agent' && p[9] !== 'ZIP-level') Object.assign(st, {color: '#f0efec', weight: 1.6});
+    const m = new ShapeMarker([p[1], p[2]], Object.assign({fillColor: c, shape: SHAPE[g], grp: g}, st));
+    m.bindPopup(() => popup(p), {maxWidth: Math.min(340, window.innerWidth - 130), autoPanPaddingTopLeft: [56, 16], autoPanPaddingBottomRight: [10, 10]});   // clear of the zoom buttons
+    m._fp = p; m._vis = false;
+    markers.push(m);
+    (markersOf[p[0]] = markersOf[p[0]] || []).push(m);
+  });
+}
+const visible = m => sel.has(m.options.grp) && ($('dosonly').checked || !isDosOnly(m._fp)) && ($('atagent').checked || !isAtAgent(m._fp));
+function refreshPoints() {
+  if (!markers) return;
   const add = [], rem = [];
   markers.forEach(m => { const v = visible(m); if (v && !m._vis) add.push(m); else if (!v && m._vis) rem.push(m); m._vis = v; });
   if (rem.length) clu.removeLayers(rem);
   if (add.length) clu.addLayers(add);
+}
+
+// mode switch and legend
+const legend = L.control({position: window.innerWidth < 640 ? 'bottomleft' : 'topright'});
+legend.onAdd = () => { const d = L.DomUtil.create('div', 'maplegend'); L.DomEvent.disableClickPropagation(d); return d; };
+legend.addTo(map);
+function drawLegend() {
+  const el = legend.getContainer();
+  if (mode === 'points') {
+    el.innerHTML = `<div class="mt">Every address on file</div>` + G.filter(g => sel.has(g)).map(g => `<div class="sw">${icon(g, 14)} ${esc(D.group_label[g])}</div>`).join('')
+      + `<div class="hint">Ringed bubble = several addresses; ring shows the group mix</div>`;
+    return;
+  }
+  const br = mode === 'county' ? cntyBr : hexBr;
+  el.innerHTML = `<div class="mt">${mode === 'county' ? 'Names per county' : 'Names per hexagon (0.5 mi)'}</div>`
+    + scaleRows(br).map(([c, t]) => `<div class="sw"><i style="background:${c}"></i>${t}</div>`).join('')
+    + `<div class="hint">Latest address, groups ticked above. ${mode === 'county' ? 'Zoom in for hexagons' : 'Zoom in for each address'}</div>`;
+}
+const MODE_NOTE = {
+  county: ['Zoomed out: counties shaded by the number of names', 'Each name counted once, at its latest address', 'Zoom in for 0.5-mile hexagons, then each address'],
+  hex: ['Mid zoom: hexagons about 0.5 mile across, shaded by the number of names', 'Each name counted once, at its latest address', 'Click a hexagon, or zoom in, to see each address'],
+  points: ['Street level: every address on file for each name, one shape per group', 'Owners blue, lenders orange, agents teal; the shape names the group', 'Click a shape for the name, address, court and source']
+};
+function setMode(force) {
+  const m = modeOf(map.getZoom());
+  if (m === mode && !force) return;
+  mode = m;
+  [cnty, hex].forEach(l => { if (l) map.removeLayer(l); });
+  map.removeLayer(clu);
+  if (m === 'county') drawCounties();
+  else if (m === 'hex') drawHex();
+  else { buildMarkers(); refreshPoints(); clu.addTo(map); }
+  drawLegend();
+  $('modeNote').innerHTML = MODE_NOTE[m].map(x => `<li>${x}</li>`).join('');
   setStatus();
 }
 function setStatus() {
-  const on = markers.reduce((a, m) => a + (m._vis ? 1 : 0), 0);
-  const base = tileOk ? 'basemap on' : (tileErr ? 'basemap offline: points and district lines still drawn' : 'basemap loading');
-  status.textContent = `Points on: ${fmt(on)} of ${fmt(D.points.length)} | ${base} | built 2026-10-12 10:53`;
+  const base = tileOk ? 'basemap on' : (tileErr ? 'basemap offline (shading and shapes still drawn)' : 'basemap loading');
+  const what = mode === 'points' ? `${fmt(markers ? markers.reduce((a, m) => a + (m._vis ? 1 : 0), 0) : 0)} addresses shown` : mode === 'hex' ? 'hexagon view' : 'county view';
+  $('status').textContent = `Zoom ${map.getZoom()}, ${what}, ${base}.`;
 }
+function updateAll() { drawBars(); setMode(true); }
+map.on('zoomend', () => setMode(false));
 
-// ---- layer list: shape + colour + points | names per group; groups with no map element below ----
-const names = g => fmt((byG[g] || {}).names_mapped);
-document.getElementById('layerlist').innerHTML = G.map(g =>
-  `<label><input type="checkbox" id="lay_${g}" checked>${sw(g)}${esc(D.group_label[g])}<span class="n">${fmt(nPts[g])} | ${names(g)}</span></label>`).join('')
-  + `<div class="nomap"><span class="ic nm" title="no map element"></span>TLC drivers: ${fmt(dr.drivers_listed)} hack licences, ${fmt(dr.drivers_named)} named, 0 with an address (no source holds one)</div>`
-  + `<div class="nomap"><span class="ic nm" title="no map element"></span>Crash drivers: ${fmt(dr.crash_driver_rows)} rows; county layer not built (no case key)</div>`;
-clu.addTo(map);
-refresh();
-window.FIG116_VIEW = {map, clu, markers, refresh};   // handle for the headless screenshot check
-G.forEach(g => document.getElementById('lay_' + g).addEventListener('change', refresh));
-document.getElementById('dosonly').addEventListener('change', refresh);
-document.getElementById('atagent').addEventListener('change', refresh);
-document.getElementById('dosonly_n').textContent = fmt(G.reduce((a, g) => a + nDos[g], 0));
-document.getElementById('atagent_n').textContent = fmt(G.reduce((a, g) => a + nAg[g], 0));
+// street-level filters
+const ownPts = D.points.filter(p => OWN.includes(gOf(p)));
+$('dosonly_n').textContent = fmt(ownPts.filter(isDosOnly).length) + ' points';
+$('atagent_n').textContent = fmt(ownPts.filter(isAtAgent).length) + ' points';
+['dosonly', 'atagent'].forEach(id => $(id).addEventListener('change', () => { refreshPoints(); setStatus(); }));
+const prec = (fo, dash) => `<svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="#c3c2b7" fill-opacity="${fo}" stroke="#c3c2b7" stroke-width="${fo ? 1 : 2}"/></svg>`;
+$('preclegend').innerHTML = `<span>${prec(.9)} exact</span><span>${prec(.45)} approximate</span><span>${prec(0)} ZIP-level</span>`;
 
-// ---- district lines ----
-const dl = L.layerGroup();
-L.geoJSON(D.boundaries, {style: {color: '#222', weight: 1.6, opacity: .8, dashArray: '5 4'}, interactive: false}).addTo(dl);
-D.boundaries.features.forEach(f => {
-  let x = 0, y = 0, n = 0;
-  f.geometry.coordinates.forEach(l => l.forEach(c => { x += c[0]; y += c[1]; n++; }));
-  L.marker([y / n, x / n], {icon: L.divIcon({className: 'dlabel', html: esc(f.properties.district), iconSize: null}), interactive: false}).addTo(dl);
+// district lines and labels
+const dl = L.layerGroup(), dlab = L.layerGroup(), dlabPA = L.layerGroup();
+L.geoJSON(D.boundaries, {style: {color: '#e6e5e0', weight: 1.4, opacity: .65, dashArray: '5 4'}, interactive: false}).addTo(dl);
+// label each district at the bounding-box centre of its largest county on the map (keeps NYC-area labels apart)
+const bigC = {};
+(D.county_shapes.features || []).forEach(f => {
+  const xs = [], ys = []; f.geometry.coordinates.forEach(r => r.forEach(c => { xs.push(c[0]); ys.push(c[1]); }));
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), a = (x1 - x0) * (y1 - y0), d = f.properties.district;
+  if (!bigC[d] || a > bigC[d].a) bigC[d] = {a, ll: [(y0 + y1) / 2, (x0 + x1) / 2]};
 });
-dl.addTo(map);
-document.getElementById('dlines').addEventListener('change', e => e.target.checked ? dl.addTo(map) : map.removeLayer(dl));
+D.boundaries.features.forEach(f => {
+  const d = f.properties.district;
+  let ll = bigC[d] && bigC[d].ll;
+  if (!ll) { let x = 0, y = 0, n = 0; f.geometry.coordinates.forEach(l => l.forEach(c => { x += c[0]; y += c[1]; n++; })); ll = [y / n, x / n]; }
+  L.marker(ll, {icon: L.divIcon({className: 'dlabel', html: `<span class="dl-in">${esc(courtName(d))}</span>`, iconSize: null}), interactive: false}).addTo(/(Pa|Conn)\.$/.test(d) ? dlabPA : dlab);
+});
+function syncLines() {
+  const on = $('dlines').checked, z = map.getZoom();
+  [[dl, on], [dlab, on && z >= 6], [dlabPA, on && z >= 7]].forEach(([l, v]) => v ? l.addTo(map) : map.removeLayer(l));
+}
+$('dlines').addEventListener('change', syncLines);
+map.on('zoomend', syncLines);
+syncLines();
 
-const prec = (fo, w) => `<svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="#555" fill-opacity="${fo}" stroke="#555" stroke-width="${w}"/></svg>`;
-document.getElementById('preclegend').innerHTML = `<span>${prec(.85, 1)} exact</span><span>${prec(.4, 1.2)} approximate</span><span>${prec(0, 2)} ZIP-level</span><span>bubble ring = group mix</span>`;
 document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
   const v = b.dataset.view;
-  if (v === 'all') { const ll = D.points.map(p => [p[1], p[2]]); map.fitBounds(L.latLngBounds(ll), {padding: [10, 10]}); }
+  if (v === 'all') map.fitBounds(L.latLngBounds(D.points.map(p => [p[1], p[2]])), {padding: [10, 10], maxZoom: 9});
+  else if (v === 'nyc') showNYC();
   else map.fitBounds(VIEWS[v]);
 }));
 
-// ---- find a name ----
-const q = document.getElementById('q'), res = document.getElementById('results');
-q.addEventListener('input', () => {
+// find a name
+const q = $('q'), res = $('results');
+let qt = null;
+q.addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(search, 200); });
+function search() {
   const s = q.value.trim().toUpperCase();
-  if (s.length < 3) { res.innerHTML = ''; return; }
+  if (s.length < 3) { res.innerHTML = s ? '<li class="meta">Type 3 or more letters</li>' : ''; return; }
   const hits = [];
   for (let i = 0; i < D.entities.length && hits.length < 15; i++) if (D.entities[i][0].toUpperCase().includes(s)) hits.push(i);
-  res.innerHTML = hits.length ? hits.map(i => { const g = G[D.entities[i][1]], n = (markersOf[i] || []).length;
-    return `<li data-i="${i}">${sw(g)}${esc(D.entities[i][0])}<div class="meta">${esc(D.group_label[g])} | ${n} address${n > 1 ? 'es' : ''}</div></li>`; }).join('')
+  const nAddr = {}; D.points.forEach(p => { nAddr[p[0]] = (nAddr[p[0]] || 0) + 1; });
+  res.innerHTML = hits.length ? hits.map(i => { const g = G[D.entities[i][1]], n = nAddr[i] || 0, lp = latestPt(D.entities[i]);
+    return `<li><button type="button" data-i="${i}">${icon(g, 14)} ${esc(D.entities[i][0])}<span class="meta">${esc(D.group_label[g])}, ${n} address${n > 1 ? 'es' : ''}, latest in ${esc(courtName(lp[10] || NONE))}</span></button></li>`; }).join('')
     : '<li class="meta">No mapped name matches</li>';
-});
+}
 res.addEventListener('click', e => {
-  const li = e.target.closest('li[data-i]'); if (!li) return;
-  const ms = markersOf[+li.dataset.i] || []; if (!ms.length) return;
-  const m = ms[0], g = m.options.grp;
-  ['dosonly', 'atagent', 'lay_' + g].forEach(id => { document.getElementById(id).checked = true; });
-  refresh();
-  if (window.matchMedia('(max-width: 860px)').matches) document.getElementById('map').scrollIntoView({behavior: 'smooth', block: 'start'});
-  if (ms.length > 1) map.fitBounds(L.latLngBounds(ms.map(x => x.getLatLng())), {maxZoom: 15, padding: [30, 30]});
+  const b = e.target.closest('button[data-i]'); if (!b) return;
+  const i = +b.dataset.i, g = G[D.entities[i][1]];
+  if (!sel.has(g)) { sel.add(g); $('lay_' + g).checked = true; drawBars(); }
+  ['dosonly', 'atagent'].forEach(id => { $(id).checked = true; });
+  buildMarkers();
+  const ms = markersOf[i] || []; if (!ms.length) return;
+  const m = ms.find(x => x._fp === latestPt(D.entities[i])) || ms[0];
+  if (window.matchMedia('(max-width: 64em)').matches) $('map').scrollIntoView({block: 'start'});
+  map.setView(m.getLatLng(), 16);
+  setMode(true);
   clu.zoomToShowLayer(m, () => m.openPopup());
 });
 
-// ---- drivers ----
-document.getElementById('drivers').innerHTML = [
-  `TLC drivers: <b>${fmt(dr.drivers_listed)}</b> hack licences, ${fmt(dr.drivers_named)} named, 0 with an address <span class="src">drivers_taxi.csv</span>`,
-  'No source holds a driver address: not mapped',
-  `Crash drivers: licence state on NYS crash reports, ${dr.crash_years.join(' to ')} <span class="src">NYS DMV crashes</span>`,
-  `N = ${fmt(dr.crash_driver_rows)} driver rows on ${fmt(dr.crash_medallions)} medallions; no name or hack-licence link`,
-  'Crash county not mapped: NYS Case file has no case key, joins to no other crash table'
-].map(x => `<li>${x}</li>`).join('');
-document.getElementById('lic').innerHTML = '<thead><tr><th class="l">Licence state</th><th>Driver rows</th><th>Share</th></tr></thead><tbody>'
-  + Object.entries(ls).map(([k, v]) => `<tr><td class="l">${esc(k)}</td><td>${fmt(v)}</td><td>${pct(v, lsTot)}</td></tr>`).join('')
-  + `<tr class="sum"><td class="l">All driver rows</td><td>${fmt(lsTot)}</td><td></td></tr></tbody>`;
+// ---- details and method ----
+(function method() {
+  const RG = {}; (D.regroup || []).forEach(([a, b, n]) => { RG[a + '>' + b] = n; });
+  const EX = {}; (D.excluded || []).forEach(x => EX[x.group] = x);
+  const lsS = D.lender_stats || {}, dd = D.dos_owner_dropped || {}, geo = D.geocode, gp = geo.precision, bs = D.links.by_source;
+  const lt = byG.lender.med_tier_points || {};
+  const DROP = {no_medallion: 'lien on Lexis names no medallion', not_on_lexis: 'lien not on Lexis', other_medallion: 'lien on Lexis names only other owners\' medallions'};
+  const anyOut = ['individual', 'llc', 'company_other', 'owners_all', 'lender', 'lender_spv', 'agent'].map(g => `${g === 'owners_all' ? 'All owners' : esc(byG[g].label)}: ${fmt(byG[g].any_outside_ny_nj)}`);
+  const zips = g => (byG[g].top_zips || []).map(z => `${z[0]} ${esc(z[2])} (${fmt(z[1])})`).join(', ');
+  const S = [
+    ['Sources', [
+      'Lexis = LexisNexis UCC lien records; NYS DOS = NY Department of State; TLC = NYC Taxi and Limousine Commission',
+      `Owner lists: owners_individuals.csv and owners_companies.csv (${fmt(own.names_on_list)} names after the group rules)`,
+      `Lexis UCC: ${fmt(bs['Lexis'])} records <span class="src">Lexis</span>`,
+      `NYS DOS UCC: v1 ${fmt(bs['DOS v1'])}, v2 ${fmt(bs['DOS v2'])} liens <span class="src">NYS DOS</span>`,
+      `NYS DOS corporations: series LLC service-of-process addresses <span class="src">NYS DOS</span>`,
+      `TLC managing-agent lists, ${D.agent_years ? D.agent_years.join(' to ') : 'n/a'} <span class="src">TLC</span>`,
+      'Name matching: name_match.py (exact, token set or subset)']],
+    ['Which address counts', [
+      'Each name once, at its latest mapped address',
+      'Skipped if that address is a managing-agent office and the name has another address',
+      `Owners whose latest address is an agent office: ${fmt(own.latest_at_agent)}; ${fmt(own.only_agent_address)} have no other address`,
+      'Agent office = same address as a TLC managing agent after removing C/O, house-number hyphens (54-11 = 5411) and ordinals (44TH = 44)',
+      `Owner addresses are UCC debtor addresses at the filing date; median filing year ${D.median_filing_year}`,
+      `Lenders: secured-party address on the lien (head office, not where loans were made)`,
+      'Series LLCs: a servicer office (service-of-process address), not an owner location',
+      'Agents: TLC managing-agent office, not an owner address']],
+    ['NYS DOS rows and Lexis', [
+      'Lexis owner rows: lien collateral names the owner\'s own medallion and the name matches',
+      'NYS DOS rows: kept only if the lien, looked up on Lexis by filing number, names a medallion on the owner\'s own list',
+      `Filing numbers: NY DOS numbers before 2003 have 6 digits; Lexis adds the 2-digit filing year (DOS 030259, 2002 = Lexis 02030259); ${fmt(lsS.dos_owner_lien_keys_normalised)} NYS DOS rows matched that way`,
+      `Kept ${fmt(dd.rows_kept)} rows, dropped ${fmt(dd.rows)}:<ul>${Object.entries(dd.by_test || {}).map(([k, v]) => `<li>${esc(DROP[k] || k)}: ${fmt(v)}</li>`).join('')}</ul>`,
+      `Lenders: lien passes the medallion test on Lexis; ${fmt(D.lender_links_dropped)} lien-party rows dropped`,
+      `Lender points by test: lien names a medallion ${fmt(lt.lien || 0)}, lender family mostly medallion loans ${fmt(lt.family || 0)}, Lexis says non-medallion but kept ${fmt(lt.c2 || 0)}`]],
+    ['Who is in each group', [
+      `Individuals list, company word (LIMITED, INCORPORATED, TRANS, MOTOR, SYSTEM, ASSETS, L.L.C.) &rarr; company: ${fmt((RG['individual>llc'] || 0) + (RG['individual>company_other'] || 0))} names`,
+      `Companies list, "(IN LIVING TRUST)" &rarr; individual: ${fmt(RG['company_other>individual'] || 0)}`,
+      'LLC = LLC, L.L.C. or LIMITED LIABILITY anywhere in the name',
+      `LLC group includes ${fmt(byG.llc.acq_on_list)} medallion-number ACQUISITION LLCs (${fmt(byG.llc.acq_mapped)} mapped)`,
+      `Out of the owner groups: lender-held series LLCs (LATKA, SIMKA, WHEELER, BANTA, REIGER, GRAVAS, IGNATOWSKI), ${fmt(EX.excl_series && EX.excl_series.names_on_list)} names`,
+      `Out: LOMTO FEDERAL CREDIT UNION (a lender), ${fmt(EX.excl_lender && EX.excl_lender.names_on_list)}; TLC and auction placeholders, ${fmt(EX.non_owner && EX.non_owner.names_on_list)}`,
+      `Series LLC group: ${fmt(lsS.spv_series)} series LLCs holding a medallion + ${fmt(lsS.spv_no_medallion)} DePalma acquisition vehicles`,
+      `Agents: ${fmt(D.agents.entities_before)} agent rows collapsed to ${fmt(D.agents.entities_after)} names`,
+      `Filing agents and the IRS are not lenders; ${fmt(lsS.agent_only_liens)} liens name only a filing agent`]],
+    ['Any address outside NY or NJ', [
+      'Names with at least one mapped address, any year, outside the NY and NJ courts',
+      ...anyOut]],
+    ['Geocoding and courts', [
+      `US Census batch geocoder, ${fmt(geo.addresses)} addresses: exact ${pct1(gp.exact, geo.addresses)}, approximate ${pct1(gp.approximate, geo.addresses)}, ZIP-level ${pct1(gp['ZIP-level'], geo.addresses)}, unmapped ${fmt(gp.unmapped || 0)}`,
+      'A Census match outside the filed state is dropped when far from the filed ZIP',
+      'Court: county &rarr; federal district from 28 U.S.C. 81 to 131; bankruptcy courts sit in the same districts',
+      `Most common latest ZIPs, individual owners: ${zips('individual')}`,
+      `Companies (other): ${zips('company_other')}`]],
+    ['Map views', [
+      `Zoom ${Z_HEX - 1} and out: counties shaded by names at their latest address`,
+      `Zoom ${Z_HEX} to ${Z_PTS - 1}: hexagons about 0.5 mile across (exact at NYC's latitude)`,
+      `Zoom ${Z_PTS} and in: every address on file, one shape per group`,
+      'Shading classes: rounded quantiles of the counts for the groups ticked; the legend gives the ranges',
+      'Colours: owners blue, lenders orange, agents teal; shades and shapes split each family; checked for colour-blind readers',
+      'Basemap: OpenStreetMap, darkened']],
+    ['Open questions', [
+      `Lexis says non-medallion, lender family mostly medallion loans: ${fmt(lt.c2 || 0)} lender points kept`,
+      'Misspelled lender names (Mega Fundig, Banco Poular and others) not yet folded',
+      `ACQUISITION LLCs: ${fmt(byG.llc.acq_on_list)} on the list; who controls them not established`,
+      `One address, many spellings: ${$('dosonly_n').textContent} use a NY DOS spelling; many sit on a Lexis point for the same place`,
+      'Individual owners whose name matches a lender family (seller financing or namesakes): not tagged',
+      'Agent-office rule moves the NY and NJ share slightly down; kept as the headline rule']]
+  ];
+  $('methodBody').innerHTML = S.map(([h, xs]) => `<section><h3>${h}</h3><ul class="b">${xs.map(x => `<li>${x}</li>`).join('')}</ul></section>`).join('');
+  $('foot').innerHTML = `Figure 116. Built 2026-10-12 12:04. Visits are counted with GoatCounter (no cookies).`;
+})();
 
-// ---- whose address ----
-const zips = g => (byG[g].top_zips || []).map(z => `${z[0]} ${esc(z[2])} (${fmt(z[1])})`).join(', ');
-const MY = D.median_filing_year;
-const ownCav = g => [`UCC debtor address at the filing date (median filing year ${MY})`, `${fmt(nAg[g])} points at a managing-agent office`, 'Not a current address', `Most common latest ZIPs: ${zips(g)}`];
-const CAV = {
-  individual: ownCav('individual'), llc: ownCav('llc'), company_other: ownCav('company_other'),
-  lender: ['Secured-party address on the UCC-1 <span class="src">NYS DOS UCC v1</span>', 'Only liens passing the medallion test <span class="src">Lexis</span>', 'Head office or filing address, not where loans were made', `${fmt(D.also_agent_lenders)} lenders are also TLC managing agents (tagged)`],
-  lender_spv: ['DOS service-of-process address <span class="src">NYS DOS corporations</span>', 'Mostly c/o Field Point Servicing (127 W 26th St) or 21-03 44th Ave, LIC', 'A servicer office, not an owner location'],
-  agent: ['TLC managing-agent office <span class="src">TLC Authorized list</span>', `Listed ${D.agent_years ? D.agent_years.join(' to ') : 'n/a'}; column empty in 2026 lists`, `${fmt(D.agents.entities_before)} agent rows, ${fmt(D.agents.entities_after)} distinct names`, 'Not an owner address']
-};
-document.getElementById('caveats').innerHTML = G.map(g => `<div><h3>${sw(g)}${esc(D.group_label[g])}</h3><ul class="b">${CAV[g].map(x => `<li>${x}</li>`).join('')}</ul></div>`).join('');
-
-// ---- group rules ----
-const RG = {}; (D.regroup || []).forEach(([a, b, n]) => { RG[a + '>' + b] = n; });
-const EX = {}; (D.excluded || []).forEach(x => EX[x.group] = x);
-const ls_ = D.lender_stats || {};
-document.getElementById('grules').innerHTML = [
-  `Individuals list, company word (LIMITED, INCORPORATED, TRANS, MOTOR, SYSTEM, ASSETS, L.L.C., truncated LL) &rarr; company: ${fmt((RG['individual>llc'] || 0) + (RG['individual>company_other'] || 0))} rows`,
-  `Companies list, "(IN LIVING TRUST)" &rarr; individual: ${fmt(RG['company_other>individual'] || 0)} row`,
-  `Out of the owner groups: lender-held series LLCs (LATKA, SIMKA, WHEELER, BANTA, REIGER, GRAVAS, IGNATOWSKI): ${fmt(EX.excl_series && EX.excl_series.names_on_list)} rows, ${fmt(EX.excl_series && EX.excl_series.medallions)} medallions`,
-  `Out of the owner groups: lender name on an owner list (LOMTO FEDERAL CREDIT UNION): ${fmt(EX.excl_lender && EX.excl_lender.names_on_list)} row`,
-  `Out of the owner groups: not an owner (NYC TAXI AND LIMOUSINE COMMISS, MEDALLION AUCTION WINNER): ${fmt(EX.non_owner && EX.non_owner.names_on_list)} rows`,
-  `LLC row includes ${fmt(byG.llc.acq_on_list)} medallion-number ACQUISITION LLCs (${fmt(byG.llc.acq_mapped)} mapped); controller not identified`,
-  `Lenders: medallion test per lien against Lexis; ${fmt(D.lender_links_dropped)} lien-party rows dropped`,
-  `Lender-held series LLCs: ${fmt(ls_.spv_entities)} kept = ${fmt(ls_.spv_series)} series LLCs holding a medallion + ${fmt(ls_.spv_no_medallion)} DePalma acquisition vehicles (no medallion)`,
-  'Septuagint Solutions: agent group only',
-  `Filing agents and the IRS are not lenders; ${fmt(ls_.agent_only_liens)} liens name only a filing agent (lender unknown)`,
-  `Agents: ${fmt(D.agents.entities_before)} agent rows collapsed to ${fmt(D.agents.entities_after)} names (name_match token set)`
-].map(x => `<li>${x}</li>`).join('');
-
-// ---- notes ----
-const geo = D.geocode, gp = geo.precision, bs = D.links.by_source;
-document.getElementById('notes').innerHTML = [
-  `Owner lists: owners_individuals.csv and owners_companies.csv; ${fmt(own.names_on_list)} rows after the group rules`,
-  'LLC = name contains LLC, L.L.C. or LIMITED LIABILITY anywhere (e.g. NB LLC CAB)',
-  `Lexis UCC (${fmt(bs['Lexis'])} records): debtor block linked when the collateral names the owner's own medallion AND the name matches (name_match.py)`,
-  `NYS DOS UCC v1 (${fmt(bs['DOS v1'])}) and v2 (${fmt(bs['DOS v2'])} liens): name-search rows kept when the name matches and stage 159 flags a UCC lien`,
-  'DOS medallion column = the searched owner\'s medallions, not collateral: DOS links are name-only',
-  'Lexis-backed basis: Lexis records, DOS rows at an address the same owner has on Lexis, DOS corporations, TLC',
-  'Medallion test (lenders): lien on Lexis with a medallion row &rarr; kept; lien not on Lexis &rarr; kept if the family\'s Lexis medallion share is 0.5 or more; never by keyword',
-  'Managing-agent office: owner address equal to an agent address after removing C/O, house-number hyphens (54-11 = 5411) and ordinals (44TH = 44)',
-  'Wrong-state guard: a Census match outside the filed state is dropped when far from the filed ZIP',
-  `Geocoding: US Census batch geocoder on ${fmt(geo.addresses)} addresses: exact ${pct(gp.exact, geo.addresses)}, approximate ${pct(gp.approximate, geo.addresses)}, ZIP-level ${pct(gp['ZIP-level'], geo.addresses)}, unmapped ${fmt(gp.unmapped || 0)}`,
-  'District: county mapped to its federal district from 28 U.S.C. 81 to 131; bankruptcy courts sit in the same districts',
-  'Colours: Okabe-Ito, checked under protan, deutan and tritan simulation; shape also marks the group',
-  'Built by stage 261 (source/2_analysis/ucc_crash_comparison/261a to 261g); data in data/2_analysis/owner_locations/',
-  'Local only: names with addresses; do not publish or upload'
-].map(x => `<li>${x}</li>`).join('');
+drawBars();
+setMode(true);
+window.FIG116_VIEW = {map, clu, setMode, get mode() { return mode; }, buildMarkers, sel, updateAll};   // handle for headless checks
 })();
 </script>
 </body>
