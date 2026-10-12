@@ -1,4 +1,4 @@
-# Figure 116: where the owners, lenders and agents in our data filed from (interactive map)
+# Figure 116: medallion owners by bankruptcy court, the addresses on their UCC lien filings (interactive map)
 
 ## Goal
 
@@ -7,15 +7,16 @@
 
 ## Output
 
-- `116_owner_lender_locations_map.html`: published on GitHub Pages (https://williamclintc.github.io/taxi-medallion-owner-map/), names and addresses shown. Leaflet 1.9.4 and markercluster 1.5.3 are inlined. Data is in the sibling `116_owner_lender_locations_map_data.js` (7.86 MB since pass 6; county shapes and court names added in pass 5).
-- Six groups, colour by family (owners blue, lenders orange, agents teal) and shape by group, used the same way on the map, in the legend, in popups, chips and the counts table (pass 5; pass 1 to 4 used six Okabe-Ito hues):
+- `116_owner_lender_locations_map.html`: published on GitHub Pages (https://williamclintc.github.io/taxi-medallion-owner-map/), names and addresses shown. Leaflet 1.9.4 and markercluster 1.5.3 are inlined. Data is in the sibling `116_owner_lender_locations_map_data.js` (9.22 MB since pass 7; county shapes and court names added in pass 5).
+- Pass 7: a second data file, `116_owner_lender_locations_map_filings.js` (11.38 MB, stage 261h from stage 262's outputs), holds the loan-filings view and loads only on the first switch to it; the owners page loads as before. The view's code is `_owner_loc_page_filings.js`, inlined by 261g.
+- Six groups, colour by family (owners blue, lenders orange, agents teal) and shape by group, used the same way on the map, in the legend, in popups, chips and the counts table (pass 5; pass 1 to 4 used six Okabe-Ito hues). Points and names mapped are pass-7 values (one point per place; people, not list rows); earlier values in each pass section:
 
 | Group | Shape | Colour | Points | Names mapped |
 |---|---|---|---|---|
-| Individual owners | circle | #7fb3ef blue (mid) | 17,027 | 4,597 |
-| Companies (LLC) | square | #c4dcf8 blue (light) | 2,498 | 1,615 |
-| Companies (other: INC, CORP, etc.) | diamond | #2f7fe0 blue (dark) | 14,278 | 4,120 |
-| Lenders | triangle | #d95926 orange | 1,339 | 579 |
+| Individual owners | circle | #7fb3ef blue (mid) | 12,896 | 4,730 |
+| Companies (LLC) | square | #c4dcf8 blue (light) | 2,028 | 1,612 |
+| Companies (other: INC, CORP, etc.) | diamond | #2f7fe0 blue (dark) | 10,967 | 4,119 |
+| Lenders | triangle | #d95926 orange | 1,295 | 579 |
 | Lender-held series LLCs (730 series + 2 DePalma acquisition vehicles) | down triangle | #f4a27c orange (light) | 732 | 732 |
 | TLC managing agents | star (light halo, larger) | #199e70 teal | 95 | 82 |
 | TLC drivers | no map element | | 0 | 0 |
@@ -26,7 +27,7 @@
 - Cluster bubbles: one cluster layer for all groups; each bubble is a donut whose ring shows the group mix.
 - Hover a bubble: per-group counts with each group's shape (readable without colour).
 - Cluster radius shrinks with zoom (44 px, 20 px from zoom 15, 6 px from zoom 17); same-address stacks still cluster and spiderfy.
-- Toggles: each group (pass 5: owners on by default, scoping the court bars and the map); owner points at an address spelling found only on NYS DOS liens (9,938 since pass 6; spelling on no Lexis record of the owner); owner points at a managing-agent office (6,482); district lines. Pass 4 removed the All sources / Lexis-backed only switch (one basis).
+- Toggles (pass 7): each group (pass 5: owners on by default, scoping the court bars and the map); the measure (Most recent address / Every address on file); source chips for owner points (Lexis only 9,819, NY DOS only 2,508, both 13,564; they replace the pass-6 toggle for spellings found only on NYS DOS liens); owner points at a managing-agent office (3,499); district lines. Pass 4 removed the All sources / Lexis-backed only switch (one basis).
 - Popups tag: "At a managing-agent office", "Also a TLC managing agent" (11 lenders), "Medallion-number ACQUISITION LLC", and the medallion-test result (lender points; owner points with DOS rows show "lien names this owner's medallion" and the lien's Lexis lender).
 - Pass 3 (2026-10-12) screens: `116_desktop_1440_lic16/17/18.png` (Woodside at street zoom), `_lic17_grey.png` (greyscale), `_cluster_tooltip.png`, `_agent_star.png`, `_group_rules.png`; pass-2 renders moved to `_screens/pass2/`.
 - `_screens/`: 1440 and 390 px (full page, viewport, counts both bases, layers, drivers, notes, cluster view, popups) and one zoomed crop per shape (`116_desktop_1440_shape_*.png`). No console errors; no sideways scroll at either width. Pass-1 screenshots moved to `_screens/pass1/`.
@@ -73,7 +74,9 @@
 
 - Owner points unchanged in total (41,482); 12 moved from individual to the company groups.
 
-## Counts (stage 261f, re-run 2026-10-12 pass 6, own-medallion rule with the lien-number fix)
+## Counts (stage 261f, re-run 2026-10-12 pass 6, own-medallion rule with the lien-number fix; superseded by pass 7 below)
+
+Pass-6 values, kept as the record. The page now shows the pass-7 counts (section "Re-run 2026-10-12, pass 7").
 
 District columns count each name once, at its latest mapped address that is not a managing-agent office (else its latest address). "Any address outside NY/NJ" counts names with at least one mapped address outside SDNY, EDNY, NDNY, WDNY and D.N.J.
 
@@ -347,7 +350,100 @@ William: "I don't understand what I'm looking at". Rebuilt through the template 
 - **Not changed (William's call).** Headline wording "last filed from" (the address is the latest non-agent UCC debtor address, and the debtor did not file it); folding DOS-only spellings by `loose_key` (open question 9).
 - **Screens:** `_screens/pass6/116_pass6_{1440,390}_*.png`; 390 adds the search popup and a tapped court. JS parses; no console errors apart from GoatCounter skipping a local file; no sideways page scroll at 1440 or 390.
 
+## Re-run 2026-10-12, pass 7: two measures, filings layer, people, places, guards
+
+William's design (2026-10-12). Everything through stages 261 and 262 and the template; new modules `_lexis_blocks.py` (262a's block reader, moved verbatim, 262a output unchanged on a 5,045-record sample), `_owner_loc_guards.py`, `_owner_loc_people.py`, `_owner_loc_measures.py`, `_owner_loc_panels.py`, `261h_build_filing_layer.py`, `_owner_loc_page_filings.js`.
+
+### 1. Two measures
+
+- **Most recent address**: one court per name, the address on its newest lien filing. Bars (default), headline sentence 1, counts-table block 1.
+- **Every address on file**: a name counts in every court it ever had a lien address in; the full set of courts worth requesting records from (a bankruptcy from 2012 on could have been filed where the owner lived then). Bars (switch), headline sentence 2, counts-table block 2 with "only ever NY or NJ" and "any address elsewhere".
+- Headline as rendered (1440 and 390 the same):
+  - "Latest address: 98% of the 10,461 owners we could map had their latest address on a UCC lien filing in New York or New Jersey: 77% Eastern District of NY (Brooklyn, Queens, Staten Island, Long Island), 17% Southern District of NY (Manhattan, Bronx, Westchester, lower Hudson Valley), 5% District of NJ, under 1% upstate NY (Northern and Western Districts), 2% elsewhere, mostly Florida."
+  - "Every address on file: 96% have only ever had NY or NJ addresses on their lien filings; 4% (392 owners) have had at least one address elsewhere, most often Southern District of Florida (124), Middle District of Florida (66), District of Connecticut (27)."
+- Wording: "filed from" is gone from the title, headline and bar sub-headings (the lender files the lien; the owner's address is the debtor address on it).
+
+| All owners | N | SDNY | EDNY | NDNY | WDNY | D.N.J. | Other | NY/NJ |
+|---|---|---|---|---|---|---|---|---|
+| Pass 6, latest non-agent address (names) | 10,332 | 1,786 | 7,700 | 8 | 6 | 556 | 276 | 10,056 (97.3%) |
+| Pass 7, most recent address (people and firms) | 10,461 | 1,745 | 8,012 | 8 | 4 | 496 | 196 | 10,265 (98.1%) |
+| Pass 7, every address on file (name-court pairs) | 10,461 (12,774 pairs) | 2,631 | 8,946 | 24 | 11 | 759 | 403 | only ever NY/NJ 10,069 (96.3%); elsewhere 392 (3.7%) |
+
+- Every address on file, other courts (All owners): S.D. Fla. 124, M.D. Fla. 66, D. Conn. 27, E.D. Pa. 21, M.D. Pa. 15, N.D. Ga. 13, C.D. Cal. 10, W.D. Wash. 9. Most recent address: S.D. Fla. 64, M.D. Fla. 37, D. Conn. 11, M.D. Pa. 10, E.D. Pa. 7.
+
+| Group, pass 7 | Rows | People (est.) | Mapped | Latest: SDNY | EDNY | NDNY | WDNY | D.N.J. | Other | Ever: SDNY | EDNY | NDNY | WDNY | D.N.J. | Other | Only NY/NJ | Elsewhere |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Individual owners | 5,117 | 5,250 | 4,730 | 481 | 3,748 | 7 | 2 | 332 | 160 | 817 | 4,199 | 19 | 6 | 468 | 326 | 4,415 | 315 |
+| Companies (LLC) | 3,952 | 3,952 | 1,612 | 329 | 1,207 | 1 | 0 | 68 | 7 | 349 | 1,241 | 2 | 0 | 78 | 10 | 1,602 | 10 |
+| Companies (other) | 5,158 | 5,158 | 4,119 | 935 | 3,057 | 0 | 2 | 96 | 29 | 1,465 | 3,506 | 3 | 5 | 213 | 67 | 4,052 | 67 |
+| **All owners** | 14,227 | 14,360 | 10,461 | 1,745 | 8,012 | 8 | 4 | 496 | 196 | 2,631 | 8,946 | 24 | 11 | 759 | 403 | 10,069 | 392 |
+| Lenders | n/a | n/a | 579 | 162 | 242 | 12 | 3 | 50 | 110 | 176 | 253 | 13 | 3 | 58 | 131 | 457 | 122 |
+| Lender-held series LLCs | 735 | n/a | 732 | 478 | 254 | 0 | 0 | 0 | 0 | 478 | 254 | 0 | 0 | 0 | 0 | 732 | 0 |
+| TLC managing agents | n/a | n/a | 82 | 17 | 65 | 0 | 0 | 0 | 0 | 18 | 66 | 0 | 0 | 0 | 0 | 82 | 0 |
+
+### 3. Latest-address rule (272-owner audit)
+
+- Latest = the point with the newest filing date of any kind (continuation and termination events count), managing-agent offices included, no fall-back to an older address elsewhere; same date: a NY or NJ address first, then more records, then the key (`_owner_loc_measures.latest`, rule `newest`).
+- 262's guards on the owner points (`_owner_loc_guards`, 262's own code through `_lexis_blocks`): 135 link rows dropped (lender address copied into the debtor block 121, C/O a lender 9, debtor is a lender 5; Lexis 81, DOS v1 36, DOS v2 18), 53 owner-address spellings, 16 of them with no other row (15 places), 44 owners.
+- 261a reads debtor blocks with 262's strict reader: an address ends at a blank line or the next label, one row per address in a block, ZIP-only addresses kept. Lexis links 87,126 to 90,336; 187 old keys (merged or glued spellings) gone, 125 new keys, 61 of them ZIP-only (165 link rows carry a ZIP-only key; 4 in pass 6). Geocoder: 55 answers copied from 262's cache, 1 address sent (5131 Northern Blvd, Woodside 11377, exact match), a spelling of 51-31 Northern Blvd already in the cache; 261d now looks both caches up by place_key before sending (verification fix below).
+- **Owners changing court, pass-6 rule to pass-7 rule on the same points: 322 of 10,461** (SDNY to EDNY 125, EDNY to SDNY 91, S.D. Fla. to EDNY 29, D.N.J. to EDNY 27, M.D. Fla. to EDNY 11, D. Conn. to EDNY 6, D.N.J. to SDNY 5, M.D. Fla. to SDNY 4, E.D. Pa. to EDNY 4, N.D. Ga. to EDNY 3, and 15 more). Pass-6 rule on the pass-7 points: SDNY 1,767, EDNY 7,884, NDNY 9, WDNY 6, D.N.J. 528, Other 267.
+- Owners whose latest point is an agent office: 2,285 (909 have no other place).
+
+### 4. Shared-name rows split into people
+
+- Individual rows with 2+ medallions: 135 tested. Clusters = medallions whose own Lexis filings, inside each medallion's holding dates (stage 159 spells), share a loose-key address; hub addresses used by 5+ owner rows (389 keys) excluded; a row splits when two clusters were held at the same time.
+- **80 rows split into 213 people** (largest 11); 45 rows not split, flagged "may be more than one person"; 2 rows with two sequential clusters kept as one (moved house). Individuals: 5,117 rows, about 5,250 people; all owners 14,227 rows, about 14,360 people and firms. Companies never split.
+- A medallion with no filing inside its holding dates is shown with the row's first person, marked "placed by default" (353 link rows); such points drive neither measure when the person has a real point.
+- Verified: SINGH,BALWINDER (I04260) splits into 9 (3C57, 4D98, 6A95, 6B87, 6C79, 7C86, 8E34, 8E86, 9Y14; 4C31 placed by default); HOSSAIN,MOHAMMAD (I01907) stays one entity.
+- Counts table reads "People (estimated)" beside the list rows; popups and search results say "one of N people with this name".
+
+### 5. Duplicate spellings folded into one point
+
+- One point per (entity, place), place = `_owner_loc_common.place_key`: loose_key (C/O, house-number hyphen, ordinals, unit designators) plus a suffix glued to the number split (34ST = 34 ST) and a trailing unit (1G) dropped; ZIP kept. The point takes the best-geocoded spelling's coordinates; the popup lists every spelling with its source.
+- Points: pass 6 35,969 (owners 33,803, lenders 1,339, series LLCs 732, agents 95) to pass 7 28,013 (owners 25,891 from 33,710 spellings at 14,858 places; lenders 1,295 from 1,339; series LLCs 732; agents 95 from 130).
+- HOSSAIN,MOHAMMAD (I01907): 9 points to 3 (35-16 34th St 11106 with 7 spellings; the typo 3156 34th St; one spelling with ZIP 11110).
+- The "spellings found only on NY DOS" toggle is replaced by source chips (owner points): Lexis only 9,819, NY DOS only 2,508, both 13,564.
+
+### 6. Loan-filings view (stage 262 data, 261h)
+
+- Switch under the title: "Owners (people and firms)" / "Loan filings (every medallion loan, all years)". One-liner: no name matching, the medallion number in the loan's collateral is the key.
+- Rows 137,038 located (guard-free, districted), 20,395 addresses, 113,358 filings, 13,776 medallions (13,154 on the TLC list; 622 off-list medallions and their 506 own rows off by default, toggle). County shading, hexagons and street points of debtor addresses (circle person, diamond company, violet); popup per address lists every row under the filters (debtor as filed, date, lender, medallions, filing type, record id).
+- Court bars on the three bases, recomputed in the browser for the year filter (default all years; one click "2012 and later") and the TLC toggle. All-years numbers equal 262d's `summary.json` (asserted in 261h, checked headless for all six tables).
+- Medallion search draws one medallion's address history as numbered stops with dates (5B67: 27 rows, 7 addresses, 1 court).
+
+| TLC-listed medallions | Basis | N | SDNY | EDNY | NDNY | WDNY | D.N.J. | S.D. Fla. | M.D. Fla. | D. Conn. | Other | NY/NJ |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| All years | A rows | 136,532 | 22,938 | 103,937 | 114 | 49 | 7,219 | 632 | 353 | 153 | 1,137 | 98.3% |
+| All years | B medallions, every court | 13,154 (20,027 pairs) | 5,538 | 12,103 | 64 | 43 | 1,351 | 229 | 110 | 52 | 537 | only ever NY/NJ 12,279 (93.3%); 875 elsewhere |
+| All years | C medallions, latest filing | 13,154 | 2,487 | 9,835 | 10 | 7 | 548 | 87 | 50 | 20 | 110 | 98.0% |
+| 2012 and later | A rows | 29,117 | 3,946 | 21,874 | 25 | 13 | 2,360 | 262 | 154 | n/a | 418 | 96.9% |
+| 2012 and later | B medallions, every court | 10,906 (12,532 pairs) | 2,599 | 8,812 | 13 | 9 | 672 | 141 | 75 | 30 | 181 | only ever NY/NJ 10,489 (96.2%); 417 elsewhere |
+| 2012 and later | C medallions, latest filing | 10,906 | 2,083 | 8,070 | 7 | 6 | 493 | 78 | 48 | 19 | 102 | 97.8% |
+
+- 2012 and later, A rows: D. Conn. is not among the three largest other courts (M.D. Pa. 65 is), so the "Other" cell holds it.
+- Every medallion named (off-list included), all years: the "A rows / B ever / C latest" columns of stage 262's `summary.md` (A 137,038 rows, 98.3% NY/NJ; B 20,670 pairs, 95.1%; C 13,776 medallions, 97.5%); the page reproduces them with the toggle on.
+- Filings headline as rendered, all years: "All years, TLC-listed medallions: 98% of 136,532 filing rows carry a debtor address in New York or New Jersey, and the most recent filing places 98% of 13,154 medallions there. Counting every court a medallion ever had an address in: 93% only ever NY or NJ, 7% (875) at least one elsewhere, most often Southern District of Florida (229), Middle District of Florida (110), District of Connecticut (52)."
+
+### Checks
+
+- JS parses (every script block); no console errors apart from GoatCounter skipping a local file; no sideways page scroll at 1440 or 390 in either view; GoatCounter tag and `#me` logic unchanged.
+- 261f asserts the latest-point districts and the every-address districts reproduce the counts table for every group; 261h asserts the three bases against 262d.
+- Screens: `_screens/pass7/116_pass7_{1440,390}_*.png` (answer and both measures, filings bars with the 2012 filter, filings counties, medallion path, split-name popup, HOSSAIN popup, street level both views, counts, details both views, full page).
+- Not done: the people split uses Lexis in-spell addresses only (NYS DOS rows place medallions, never split them); off-list medallions are drawn but not named in the filings headline; the rows the audit found with a lender's city and ZIP in the debtor block (CABLE CAB CORP) stay as 262 left them.
+
+### Verification fixes (pass 7, same day)
+
+Sixteen verifier findings on pass 7; all fixed through the stages, the template and this note, then stage 261 re-run (`--skip-agents`; every count identical to pass 7, 261d sent nothing). None changes a number on the page.
+
+- **Note.** Output table and the Toggles bullet refreshed to pass-7 values (asserted equal to `owner_locations_map_data.json`); the pass-6 Counts section stamped as superseded; pass-6 points 35,575 to 35,969 (here and in `FIGURES.md`); "125 new (165 ZIP-only keys)" to 125 new keys, 61 ZIP-only, 165 link rows; HOSSAIN's main point 6 to 7 spellings; "16 places" to 16 spellings at 15 places (261f now writes `places_only_guarded`; the page's guards line says both).
+- **Geocoder (261d).** Both caches are looked up by `place_key` before anything is sent, so a re-spelled cached place (5131 vs 51-31 Northern Blvd) takes the cached answer under the new key (`copy_by_place`; the row keeps the spelling sent and the Census answer). Unit-tested: with the 5131 row removed it is filled from the 51-31 row, not sent. This re-run: copied by place 0, sent 0.
+- **Counts table.** The right edge fades and a hint ("Scroll the table sideways for the rest of the columns") shows whenever columns are off-screen, at any width, and clears at the end of the scroll (1440: scroll width 2,124 px in a 1,278 px box; 390: 1,965 in 324). Caption names the two blocks left to right.
+- **Wording.** Meta description no longer says "filed from". Owners facts: "Addresses found by matching owner names to the debtor names on the liens (word order ignored); the Loan filings view skips the name match and keys on the medallion number instead". Switch note: "Not by owner name: the medallion number in the loan's collateral is the key". Filings headline N: "filing rows naming a TLC-listed medallion" (or "naming a medallion" with the toggle on) and "TLC-listed medallions". Filings facts: "Medallions named: 13,794; with a located address 13,776, of which 13,154 on the TLC worklist and 622 off it". Basis button "Medallions, every court"; its note says "ever" only with the year filter off, else "in the years chosen" (latest-filing note likewise).
+- **Medallion path.** Stops closer than 22 px at the current zoom share one marker labelled with their numbers ("5 to 7", "5, 7"), tooltip listing each stop's date and address; redrawn on zoom. 5B67 at zoom 11: 1, 2, 3, 4, "5 to 7"; at zoom 14: "5, 7" and 6 apart.
+- **Phone.** The map legend hides while a popup is open under 640 px and returns on close; popups under 640 px take a max height of 60% of the map and scroll inside (SINGH,BALWINDER 3C57 popup bottom at 377 px in a 558 px map; the 6814 5th Ave filings popup 266 in 558). Tap targets: view switch, measure, count, year inputs and buttons, map views, Clear at 44 px; chips 40 px.
+- **Screens:** `_screens/pass7/116_pass7v_{1440,390}_*.png` (answer and bars, counts table with the cue and scrolled to the end, split popup, street level, filings bars 2012 and later on the every-court basis, medallion path at two zooms, a filings popup at 390, details, full page). JS parses (four script blocks); no console errors apart from GoatCounter skipping a local file; no sideways page scroll at 1440 or 390 in either view; all six all-years bases equal `summary.json`; GoatCounter tag and `#me` logic unchanged.
+
 ## Status
 
-Built 2026-10-12, passes 2 and 3 the same day; re-run the same day with the DOS medallion-lender rule (pass 3), the own-medallion rule (pass 4), the redesign (pass 5) and the verification fixes (pass 6). Published on GitHub Pages at William's request. Passes 4 to 6 not committed or pushed. Nothing sent to Ed.
+Built 2026-10-12, passes 2 and 3 the same day; re-run the same day with the DOS medallion-lender rule (pass 3), the own-medallion rule (pass 4), the redesign (pass 5), the verification fixes (pass 6) and the two measures, people split, folded places, guards and loan-filings view (pass 7). Published on GitHub Pages at William's request; the pass-7 files are copied into the Pages clone, not committed. Passes 4 to 7 not committed or pushed. Nothing sent to Ed.
 - A stale pass-1 copy (names with addresses) sits outside the project at `~/Sites/taxi-map/` (synced by `~/Sites/taxi-map-bin/sync_taxi_map.sh`), served by `python -m http.server 8734` on 127.0.0.1 and proxied tailnet-only by Tailscale at `/taxi-map`. Not created by stage 261; left as is.
