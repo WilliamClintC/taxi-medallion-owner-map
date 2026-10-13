@@ -753,6 +753,15 @@ The fourth location tier's rule (the Census could not place the address) now sit
 
 `_screens/pass10/116_pass10_{1440,390}_{n}_{what}.png`: landing, state, court, county, city, ZIP, hexagon, legend close-up, page top, owners landing and owners map; 1440 also the Count button tooltip.
 
+## Pass 11 (2026-10-13): the two-ways block behind a button
+
+- William: "put it being a more info button or something". The "Two ways onto the map" block is now closed on load.
+- Button label: "More info", at the end of the view-switch row, after the caption. On a phone it wraps under the caption.
+- Behaviour: a real button with aria-expanded and aria-controls; click, Enter or Space toggles; Esc closes it. The block opens in place, in both views. Nothing is stored; it is closed again on reload. Closed, the block takes no space.
+- Text, counts and the missing-data message are unchanged. The missing-data message sits inside the closed block until it is opened.
+- Checks: both data files and every input file byte-identical; no console errors beyond GoatCounter; no sideways scroll at 320, 390 and 1440, open or closed, in both views.
+- Screens: figures/2026-10-12/_screens/pass11/116_pass11_{1440,390}_*.png
+
 ## Status
 
 Built 2026-10-12, passes 2 and 3 the same day; re-run the same day with the DOS medallion-lender rule (pass 3), the own-medallion rule (pass 4), the redesign (pass 5), the verification fixes (pass 6), the two measures, people split, folded places, guards and loan-filings view (pass 7), and the Group-by levels, filings landing view, every-address default, blue-to-red ramp, hover highlight and the drivers box removal (pass 8). Published on GitHub Pages at William's request; the pass-8 files (copy pass and fixes included) are copied into the Pages clone, not committed. Passes 4 to 8 not committed or pushed. Nothing sent to Ed. The pass-8 copy pass (website-writer) and the fix pass after the verifiers are done.

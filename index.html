@@ -993,7 +993,7 @@ footer { padding-block:0 var(--space-6); color:var(--muted); font-size:.875rem; 
   #map { height:62vh; min-height:360px; }
   .viewsw .seg button { font-size:.9375rem; }
   /* tap targets at least 44 px on a phone */
-  .seg button, .viewsw .seg button, .yearf input, .yearf button, .views button, #mclear, #rankedMore { min-height:44px; }
+  .seg button, .viewsw .seg button, .yearf input, .yearf button, .views button, #mclear, #rankedMore, #howBtn { min-height:44px; }
   .chip { min-height:40px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
@@ -1003,11 +1003,11 @@ footer { padding-block:0 var(--space-6); color:var(--muted); font-size:.875rem; 
 <header class="top wrap">
   <h1>Where medallions with UCC liens are</h1>
   <p class="lede">Each NYC taxi medallion with a UCC lien is placed at the debtor address on its lien filings. Group the map by state, bankruptcy court, county, city or ZIP. The second view maps owners by name. Figure 116.</p>
-  <div class="viewsw"><span class="lab muted">Show</span><div class="seg" role="tablist" id="viewsw"><button type="button" role="tab" aria-selected="true" data-view="filings">Medallions with liens</button><button type="button" role="tab" aria-selected="false" data-view="owners">Owners by name</button></div><span class="small muted" id="viewNote"></span></div>
+  <div class="viewsw"><span class="lab muted">Show</span><div class="seg" role="tablist" id="viewsw"><button type="button" role="tab" aria-selected="true" data-view="filings">Medallions with liens</button><button type="button" role="tab" aria-selected="false" data-view="owners">Owners by name</button></div><span class="small muted" id="viewNote"></span><button type="button" id="howBtn" aria-expanded="false" aria-controls="how">More info</button></div>
 </header>
 <main id="main" class="wrap">
   <noscript><p>Turn on JavaScript to see the counts and the map.</p></noscript>
-  <section class="panel how" aria-labelledby="h-how">
+  <section class="panel how" id="how" aria-labelledby="h-how" hidden>
     <h2 id="h-how">Two ways onto the map</h2>
     <ul class="b">
       <li><b>Medallions with liens.</b> Every UCC (Uniform Commercial Code) filing in our LexisNexis collection whose collateral names a medallion number, placed at the debtor address on the filing. No name matching. The filings run from 1966 to 2026. Open, terminated and lapsed liens all count. <span id="howF">Loading the filing counts…</span></li>
@@ -2131,7 +2131,7 @@ res.addEventListener('click', e => {
 });
 
 // ---- footer (the owners Details box was removed in pass 9, William 2026-10-13) ----
-$('foot').innerHTML = `Figure 116, built 2026-10-13 01:35. Visits are counted with GoatCounter, which sets no cookies.`;
+$('foot').innerHTML = `Figure 116, built 2026-10-13 01:52. Visits are counted with GoatCounter, which sets no cookies.`;
 
 // ---- the medallions-with-liens view (its code is in the inlined module; its data file loads on page load) ----
 FILINGS = window.FIG116_FILINGS ? window.FIG116_FILINGS({L, map, D, fmt, pct1, pct0, esc, $, courtName, courtFull, courtArea, courtTip, DI, NONE, DC, COL, SHAPE, LABEL, icon, ShapeMarker, makeCluster, proj, barRows, setMode, setStatus, updateAll, Z_PTS, rampLegend, popOpts, unitKey, addUnit, finishUnits, cityLabel, topCityPerZip, UNIT, MEAS, indexCounties, levelUnitsCount, linesR, hexCount: () => hex ? hex.getLayers().length : 0, dataFile: '116_owner_lender_locations_map_filings.js'}) : null;
@@ -2148,6 +2148,14 @@ function setView(v) {
   updateAll();
 }
 $('viewsw').querySelectorAll('button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+
+// "More info" opens the two-ways block in place; Esc closes it; no storage
+(function () {
+  const btn = $('howBtn'), box = $('how');
+  const set = open => { box.hidden = !open; btn.setAttribute('aria-expanded', open ? 'true' : 'false'); };
+  btn.addEventListener('click', () => set(box.hidden));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !box.hidden) { set(false); if (box.contains(document.activeElement)) btn.focus(); } });
+})();
 
 // one-line explanations on the Count and Measure buttons (data-tip): shown on hover, focus and long press; Esc hides
 (function () {
