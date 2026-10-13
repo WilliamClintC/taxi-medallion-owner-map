@@ -140,6 +140,7 @@ All sources (the only basis since pass 4). Pass-4 values in the pass-6 section b
 - **Lexis-backed basis.** Removed from the page in pass 4 (see below). `backed` stays per point for the DOS-only address toggle.
 - **LLC rule.** LLC, L.L.C., L L C or LIMITED LIABILITY anywhere in the name (CHIPS AHOY TAXI LLC R, MULLAR TRANSPORT LLC TAXI SERVICE, NB LLC CAB).
 - **Geocoding.** US Census batch geocoder on 24,963 addresses: exact 18,347 (73.5%), approximate 4,618 (18.5%), ZIP-level 1,870 (7.5%), unmapped 128. Wrong-state guard drops 8. Pass 2 sent 0 new addresses.
+- **Unmatched addresses (pass 9).** `_owner_loc_fallback.place_unmapped` puts an address the geocoder could not place at the middle of our Census-matched addresses with the same ZIP (3 or more of them; 00000 is no ZIP), else the same city, else at the Census 2023 place point; precision ZIP-level or city-level ("city area only" on the page). Owners 143 of 153 placed, filings 99 of 106. City units of unmatched addresses come from `city_unit` (the filed city checked against the ZIP's Census cities).
 - **Districts.** County to district from 28 U.S.C. 81 to 131 (`data/0_raw/usc_title28_ch5_districts/`); problems in `district_problems.txt`.
 - **Basemap.** OpenStreetMap tiles need a network connection; offline, points and district lines still draw.
 
@@ -152,6 +153,7 @@ cd source/2_analysis/ucc_crash_comparison
 
 - Drop `--skip-agents` to re-read the TLC files (about 5 GB on /Volumes/HDD).
 - 261d sends only addresses not already in the cache.
+- 261e and 261h read the Census place gazetteer (`data/0_raw/census_geo_2023/place_gaz/`) and 262's `filing_addresses.csv` through `_owner_loc_fallback` (pass 9); 262 must have run first.
 - Screenshots: playwright script (pass-2 copy in the session scratchpad, `shot.py`); the page exposes `window.FIG116_VIEW` for it.
 
 ## Re-run 2026-10-12, pass 3: DOS medallion-lender rule
@@ -546,6 +548,210 @@ The copy pass (website-writer) ran after the build and rewrote every reader-faci
 - Reader-facing strings added or changed by this pass, for the website-writer: the Court mode note ("Each bankruptcy court is shaded by its number of medallions, as one shape." and the owners twin), the Details "Group by" bullets for Court, City (the abbreviations) and the new "Bubble numbers" bullet, and the ZIP label bullet.
 - Checks after the fixes: runner `261_run_owner_locations.py --skip-agents` exit 0 (261d "to send 0"; 261e "court shapes 91 districts, 172 rings, 16315 points"; 261f latest-point and every-address cross-checks pass; 261h three bases equal 262d's summary.json); all four inline script blocks parse (new Function); headless Edge at 1440 and 390: landing on Medallions with liens, basis Medallions every address, Group by Auto; all three bases match summary.json; no sideways scroll at either width in either view at any level or with Details open; no placeholder cell; no "n/a", "hack licences", em dash or "filed from" in the page text; the only console error is the GoatCounter script blocked by the test harness; GoatCounter head block and the #me toast byte-identical to the clone's HEAD (md5 6be8c1fe... and 1dc302bb...). Every count on the page is the pass 8 value except the City level (997 and 684 cities, pairs 35,835 and 17,841).
 - Screens: `_screens/pass8/116_pass8v_{1440,390}_*.png` (landing, State with a real-pointer hover, Court with a hover on a county that holds no address, County, City, ZIP, Hexagon, Address, owners City and Court, the counts tables, the phone control and phone table, the phone tap), plus `_tops_v_{1440,390}.json`.
+
+## Pass 9 (2026-10-13): unmatched addresses placed by ZIP and city, City units from ZIP, owners boxes removed, matching explained
+
+William's messages, 2026-10-12 and 2026-10-13, verbatim: "i understand that some places arent able to match with the census for those ones can you just try to extract them from zipcode and city , etc"; "take this out" (the owners view's summary box, "Where the owners are"); "can you add an explantion of the matching so we have differnt type of matching yes ? the first set of matching is matched from the TLC file to our UCC do we hae the full set of TLC files from 2013 to toay. the second is straight just lookign at all the medalliosnrealted filing in the UCC where a medallion is named and plotting those locations"; ".... take out htis portion" (the owners view's Details box); "when you plotted medallions with liens you made sure to also include inactive liens yes?" (yes; the explanation block says so). Copy on the page is the builder's draft; a website-writer pass rewrites it.
+
+### What changed
+
+- **Addresses the Census could not place are now on the map.** A new module, `_owner_loc_fallback.py`, builds a pool of every Census-matched address on both sides (41,445 addresses: 1,849 ZIPs, 1,283 city units; 00000 is no ZIP, and a ZIP is a key only with 3 or more pool addresses, both since the fix below) and tries five routes in order. Precision "ZIP-level" (route 1) or "city-level" (routes 2 to 5); the page calls the new tier "city area only" and draws it as a dashed ring.
+- **City units of unmatched addresses are checked against the ZIP.** `city_unit`: a Census-matched address keeps its Census city; an unmatched address keeps its filed city (folded) when the Census found that city in the address's ZIP (11101 holds Long Island City, Astoria and Sunnyside), else takes the ZIP's commonest Census city. The check needs 3 or more pool addresses in the ZIP; a thinner ZIP, or 00000, leaves the filed city. Both views, the ranked table and the ZIP labels rest on it.
+- **Owners view, two boxes out** (William): the summary box ("Where the owners are", the two headline sentences, the "392 owners (4%)" list and its six bullets) and the whole "Details: owners by name" box, with the JS that filled them. Nothing from them is recreated elsewhere. The view keeps the switch, the Bankruptcy courts bars with the group chips and the Count control, the map and Group by, the ranked table, the side panels, the Find a name search and both Counts by group tables.
+- **Explanation block "Two ways onto the map"**, a panel directly under the view switch, visible in both views (text below).
+- Stage 262 untouched (md5 of every file under `data/2_analysis/medallion_filing_locations/` identical before and after); the geocoder caches untouched; 261d sent 0 addresses.
+
+### Routes, in order
+
+| Route | Point | County | Precision | Label on the data |
+|---|---|---|---|---|
+| 1 | median of the pool's addresses with the same ZIP (3 or more of them; 00000 is no ZIP) | their modal county | ZIP-level | ZIP, middle of our matched addresses |
+| 2 | median of the pool's addresses in the same city unit (3 or more) | modal county | city-level | city, middle of our matched addresses |
+| 3 | Census 2023 place gazetteer internal point (same state, same name after the type word is removed; a non-CDP first, then the largest land area) | point in polygon (261e / 261h) | city-level | city, Census place point |
+| 4 | as route 2 with 1 or 2 pool addresses | modal county | city-level | city, middle of our matched addresses (fewer than 3) |
+| 5 | the filed city equals a county name of the state (QUEENS, NY): median of the pool's addresses in that county | that county | city-level | county name, middle of our matched addresses |
+| 6 | none | | unmapped | stays off the map |
+
+Owners side (261e, written to `addresses_located.csv`, new column `fallback`):
+
+| | Addresses |
+|---|---|
+| Unmapped before | 153 |
+| Route 1, ZIP | 9 |
+| Route 2, city (3 or more) | 104 |
+| Route 3, Census place point | 25 |
+| Route 4, city (fewer than 3) | 4 |
+| Route 5, county name (QUEENS, NY) | 1 |
+| Still unmapped | 10 |
+
+Still unmapped, owners (city, state, ZIP as filed): MELVILLE NE (2 addresses); NEW YORK NE; NEW YO NY (437 Madison Ave); CLARK NY; HOLLISWOOD NY; NORTH WOODMERE NY; LINCOLN NY 13043; PLAINVILLE NY 13137; LIONO LAKES MI 55014. HOLLISWOOD and NORTH WOODMERE are neighbourhood names: the 2023 place gazetteer has no entry for either (only Woodmere CDP), and the pool keys its matched addresses by the Census city, so a neighbourhood filed as the city has no unit to land in. No fold was invented for them.
+
+Filings side (261h, in memory; nothing under `medallion_filing_locations/` written):
+
+| | Addresses | Filing rows | Medallions |
+|---|---|---|---|
+| Unmapped before | 106 | 150 | 146 medallion-rows |
+| Route 1, ZIP | 1 | | |
+| Route 2, city (3 or more) | 92 | | |
+| Route 3, Census place point | 5 | | |
+| Route 4, city (fewer than 3) | 1 | | |
+| Recovered | 99 | 143 | 130 (all TLC-listed; none new to the map, each already had a located row) |
+| Still unmapped | 7 | 7 | 8 |
+
+Still unmapped, filings: HOLLISWOOD NY (2 addresses), CRONE PARK NY, LEFRAK CITY NY, LINCOLN NY 13043, PLAINVILLE NY 13137, "1310" PA (the street number filed as the city). Of the 8,790 unlocated rows with no guard, 8,640 carry no address at all and are not recoverable.
+
+Precision after the pass:
+
+| Tier | Owners (24,891 addresses) | Filings on the page (20,494 addresses) |
+|---|---|---|
+| exact | 18,356 | 16,987 |
+| approximate | 4,532 | 1,550 |
+| ZIP area only | 1,859 (1,850 before) | 1,859 (1,858 before) |
+| city area only | 134 | 98 |
+| unmapped | 10 (153 before) | 7 of 106 before (the rest of 262's 106 sit on rows the page does not draw) |
+
+Owner points drawn: 28,110 (28,013 in pass 8). Filing rows on the page: 137,181 (137,038); addresses 20,494 (20,395).
+
+### City units: moves old to new
+
+On the addresses each view draws, `city_unit` differs from pass 8's `city_of` for 105 owner addresses (89 distinct old-to-new pairs) and 26 filing addresses (24 pairs). All are unmatched addresses whose filed city is not one the Census found in their ZIP, the ZIP holding 3 or more matched addresses. The ten commonest moves, both sides together:
+
+| Old unit | New unit | Addresses |
+|---|---|---|
+| Bronx, NY | New York, NY | 4 |
+| Jackson Heights, NY | East Elmhurst, NY | 4 |
+| Queens, NY | Jamaica, NY | 4 |
+| Elmhurst, NY | East Elmhurst, NY | 3 |
+| Jamaica, NY | Queens Village, NY | 3 |
+| Melville, NY | Garden City, NY | 3 |
+| Queens, NY | Woodside, NY | 3 |
+| Old Brookville, NY | Greenvale, NY | 2 |
+| Queens, NY | Ozone Park, NY | 2 |
+| S.Richmond Hill, NY | South Richmond Hill, NY | 2 |
+
+The rule follows the ZIP even when the filed city is a real place (Melville, NY with a Garden City ZIP; Kew Gardens with a Brooklyn ZIP): the ZIP is the geocoded key and the filed city was not among the ZIP's Census cities. City units: owners 777 (799 in pass 8), filings 995 (1,001); on the page 663 (684) and 991 (997).
+
+Folds added (filed-city path only): B'KLYN, JAMACIA, BELLROSE, RICHMONDHILLS, AMITVILLE, GREEN PORT, WEST HAMPTON BEACH; and the neighbourhood table CONEY ISLAND to BROOKLYN, RIVERDALE to BRONX (NY only, never applied to a Census city). Unmatched addresses they catch: owners BELLROSE 5, WEST HAMPTON BEACH 3, JAMACIA 2, B'KLYN 2, RICHMONDHILLS 1, GREEN PORT 1, AMITVILLE 1, RIVERDALE 1; filings B'KLYN 1, WEST HAMPTON BEACH 1, CONEY ISLAND 1.
+
+### Headline numbers, before and after
+
+- Filings view, landing (Medallions, every address, all years, TLC list only): "93% of 13,154 medallions with a UCC lien have only ever had a debtor address in New York or New Jersey. 98% have their latest lien filing there." Unchanged at the rounding shown. Details, NY or NJ share: medallions in every court 95.3% (95.4% in 262d's summary), latest filing 98.0% (98.0%), lien filings 98.3% (98.3%).
+- Owners view (box removed; the bar summary line): 10,461 owners; 10,068 (96.2%) appear only in New York or New Jersey courts, 393 (3.8%) elsewhere as well (392 in pass 8).
+
+Top five per level, as the ranked table shows them (pass 8 value in parentheses where it moved):
+
+| Level | Filings, medallions every address | Owners, every address on file |
+|---|---|---|
+| State | New York 13,109 (13,108); New Jersey 1,351; Florida 339 (337); Pennsylvania 73 (71); Connecticut 52 (15,386 pairs; 15,374) | New York 10,237 (10,236); New Jersey 759; Florida 190; Pennsylvania 40; Connecticut 27 (11,395 pairs; 11,393) |
+| Court | E.D.N.Y. 12,103; S.D.N.Y. 5,551 (5,538); D.N.J. 1,351; S.D. Fla. 229; M.D. Fla. 112 (110) (20,051 pairs; 20,027) | E.D.N.Y. 8,946; S.D.N.Y. 2,637 (2,631); D.N.J. 759; S.D. Fla. 124; M.D. Fla. 66 (12,781 pairs; 12,774) |
+| County | Queens 9,745; Kings 5,305 (5,301); New York 4,459 (4,446); Nassau 2,416; Bronx 1,255 (27,383 pairs; 27,354) | Queens 6,402; Kings 2,839; New York 1,941 (1,935); Nassau 1,247; Bronx 616 (14,975 pairs; 14,968) |
+| City | Brooklyn 5,303 (5,299); New York 4,451 (4,437); Long Island City 3,674 (3,673); Woodside 2,007; Astoria 1,746 (1,744) (35,856 pairs; 35,835; 991 cities, 997) | Brooklyn 2,838 (2,837); New York 1,941 (1,933); Long Island City 1,891; Woodside 1,056; Astoria 870 (868) (17,832 pairs; 17,841; 663 cities, 684) |
+| ZIP | 11101 Long Island City 3,635; 11377 Woodside 2,011; 10036 New York 1,193; 10019 New York 878; 11106 Astoria 855 (41,967 pairs; 41,835; 1,339 ZIPs, 1,308) | 11101 Long Island City 1,870; 11377 Woodside 1,063; 10036 New York 451; 11106 Astoria 425; 11230 Brooklyn 364 (20,452 pairs; 20,403; 1,006 ZIPs, 986) |
+
+Units per level: states 46 / 36; courts 80 / 59; counties 366 (363) / 195; cities 991 / 663; ZIPs 1,339 / 1,006.
+
+### The three bases over all rows, against 262d
+
+261h still asserts the three bases on the rows 262 located equal `summary.json` (they do). Over all rows on the page (the 143 recovered rows included), TLC-listed medallions:
+
+| Base | SDNY | EDNY | NDNY | WDNY | D.N.J. | Other | 262d's (SDNY, EDNY, other) |
+|---|---|---|---|---|---|---|---|
+| A, lien filings | 22,986 | 104,015 | 114 | 49 | 7,219 | 2,292 | 22,938, 103,937, 2,275 |
+| B, medallions every address | 5,551 | 12,103 | 64 | 43 | 1,351 | 939 | 5,538, 12,103, 928 |
+| C, medallions latest filing | 2,488 | 9,834 | 10 | 7 | 548 | 267 | 2,487, 9,835, 267 |
+
+Every medallion (TLC setting off): A 23,048 / 104,288 / 114 / 50 / 7,263 / 2,418 (262d: 23,000 / 104,210 / 114 / 50 / 7,263 / 2,401); B 5,678 / 12,502 / 64 / 44 / 1,390 / 1,016 (5,665 / 12,502 / 64 / 44 / 1,390 / 1,005); C 2,607 / 10,227 / 10 / 8 / 583 / 341 (2,606 / 10,228 / 10 / 8 / 583 / 341). The page's live bases equal 261h's `counts.bases_all` on all three (headless check); the Details "Three ways to count" line now quotes the all-rows shares.
+
+### Sources
+
+- US Census Bureau 2023 Gazetteer Files, places, downloaded 2026-10-12: `data/0_raw/census_geo_2023/place_gaz/2023_Gaz_place_national.txt` (32,329 places; 32,104 distinct state and name keys after the type word is removed). Not under `gaz/`, which 261d globs.
+- The pool: `owner_locations/addresses_geocoded.csv` (261d) and `medallion_filing_locations/filing_addresses.csv` (stage 262, read-only).
+- County names for route 5: `cb_2023_us_county_500k`.
+
+### The explanation block (page text, builder's draft)
+
+Heading "Two ways onto the map", one bullet per view, under the view switch in both views:
+
+- Medallions with liens. Every UCC (Uniform Commercial Code) filing in our LexisNexis collection whose collateral names a medallion number, placed at the debtor address on the filing. No name matching. Filings 1966 to 2026. Open, terminated and lapsed liens all count. 137,181 located filings naming 13,154 medallions on the NYC Taxi and Limousine Commission (TLC) lists. The collection covers 95.7% of the medallions we set out to collect.
+- Owners by name. The TLC owner lists, everyone who held a medallion on the TLC record from 7 March 2013 to early 2026 (the TLC published no owner list before 2013), matched by name to the debtor names on UCC filings, word order ignored. On the LexisNexis route the filing must also name one of that owner's own medallions. 14,227 entries on the lists; 10,461 have an address on the map.
+
+The two counts in the first bullet and the two in the second are filled from the data (`counts.rows`, `counts.medallions_tlc`; `names_on_list`, `names_mapped`); the 95.7% and the dates are literal. Wording fix 2026-10-13: LexisNexis, UCC and the NYC Taxi and Limousine Commission spelled out on first use in the block; "medallion worklist" replaced by "medallions we set out to collect".
+
+### Page changes
+
+- Legend (both views' "At address level" panels): a fourth tier, "city area only", a hollow ring with a dashed outline (Leaflet circleMarker `dashArray: '3 3'`; the key draws it with `stroke-dasharray`). Popups: "Location match: city area only". The owners side panel carries one line under the key with the rule and the counts (134 addresses as city area only; 10 stay off the map). The filings Details "Geocoding" section lists the Census result, the 99 placed and the 7 off the map, and the tiers on the map; "What the data holds" says 137,181 placed on the map, 143 of them by ZIP or city.
+- Details "Group by", City: the neighbourhood folds and a new bullet on the ZIP check. The City mode note in both views says "checked against the ZIP".
+- Removed: the owners summary panel (`#answer`, `#answer2`, `#facts`) and the owners Details (`#method`, `#methodBody`) with their JS; the footer line stays. The missing-data guard now writes into the filings headline.
+
+### Files and pipeline
+
+- New: `_owner_loc_fallback.py` (Pool, `place_unmapped`, `city_unit`, `ROUTES`). Changed: `_owner_loc_geo_units.py` (seven fold entries, `NYC_NEIGHBOURHOOD`, docstring), `261e_assign_districts.py` (fallback before the county step; `fallback` column; route tally printed), `261f_build_owner_location_points.py` (PREC_RANK gains city-level and unmapped 4; `city_unit`; geocode summary carries the tiers and the routes), `261h_build_filing_layer.py` (`recover`; the 262d cross-check on the rows 262 located; `counts.recovered`, `counts.precision`, `counts.bases_all`), the runner's docstring, the template and `_owner_loc_page_filings.js`. 261d and stage 262 untouched.
+- Re-run with `261_run_owner_locations.py --skip-agents`, exit 0: 261d "to send 0"; 261e route tally as tabulated; 261f cross-checks pass; 261h's assert passes and prints the recovered counts and the all-rows bases.
+
+### Checks
+
+- All four inline script blocks parse (new Function); headless Edge at 1440 and 390: no console error apart from GoatCounter declining localhost; no sideways scroll on the landing, the City level, the Details open or the owners view; the three bases on the page equal 261h's `bases_all`; the city-area popup shows the tier line; no element of the two removed boxes remains (`#answer`, `#facts`, `#method`, `#methodBody`, `#h-answer` absent); the owners view shows Two ways onto the map, Bankruptcy courts, Map and Counts by group (4 and 3 rows).
+- md5 of every file under `medallion_filing_locations/` identical to the pre-pass record; `geocode_cache.csv` identical; no em dash in any changed module, the page, the data files or this section, and the debtor address is nowhere described as where the owner filed; GoatCounter head block and the `#me` toast byte-identical to the Pages clone (md5 b43a53cb, 050d3d76).
+- Screens: `_screens/pass9/116_pass9_{1440,390}_*.png`: the landing with the explanation block, the block alone, the four-tier legend (filings and owners panels), a city-area popup (114-38 Jewel Ave, Flushing, NY; Eastern District of New York; no ZIP), the owners view top and its Counts tables and full page, the City ranked table over NYC, the Details with the geocoder sentences; `_tops9.json` holds the ranked tops.
+- Not done: the website-writer copy pass on the new strings (the explanation block, the tier note, the Details lines). A filed neighbourhood name (Holliswood, North Woodmere, Lefrak City, Crone Park) has no route; a pool keyed by the filed city of matched addresses would catch the first two and is not built.
+
+### Pass 9 fix (2026-10-13, after the data verifier's hand check)
+
+The verifier hand-checked all 242 recovered addresses and found three wrong courts, two wrong counties and one wrong City unit, all from the ZIP route and the City-unit ZIP check accepting any ZIP in the pool: the placeholder 00000 (43 matched owner addresses, spread over New York, Kings, Queens and Nassau counties, median point in Woodside) and ZIPs with 1 or 2 pool addresses (1,138 of 1,850). Fix in `_owner_loc_fallback.py`: 00000 is no ZIP (`NO_ZIP`), and a ZIP is a key only with 3 or more pool addresses (`ZIP_MIN`, `Pool.zip_ok`), for route 1 and the City-unit check alike; otherwise the address takes the city route and keeps its filed city. The tables and counts above are restated to the fixed run.
+
+- Routes before and after. Owners: ZIP 26 to 9; city 90 to 104; Census place point 24 to 25; city with fewer than 3 addresses 2 to 4; county name 1; still unmapped 10, the same ten. Filings: ZIP 8 to 1; city 85 to 92; place point 5; fewer than 3 1; still unmapped 7, the same seven. Recovered filing rows, addresses and medallions unchanged (143, 99, 130).
+- The hand-checked addresses now: 149 Linden Ave, Irvington NY 00000 to Westchester, SDNY (was Queens, EDNY); 210 E 181st St, New York NY 11047 to New York County, SDNY (was Nassau, EDNY, unit Manhasset Hills; the court is right, the county is the city route's New York rather than the street's Bronx); 82-24 Bay Parkway, Brooklyn 00000 to Kings (was Queens); 399 Leversell St, Staten Island 11308 to Richmond, unit Staten Island (was Queens, Corona); PO Box 863741, Ridgewood 11386 keeps unit Ridgewood (was Corona).
+- Not fixed by this rule: 225 Broadhollow Road #132W, Melville NE 10001 still sits in New York County (SDNY) by its ZIP; 10001 holds 145 pool addresses, so the minimum does not reach it. A filed-state check would catch it, but it would also unmap two shifted-field filings (35-46 Crescent St and 91-39 11th Street, state filed as AL, ZIPs 11102 and 11418) that the ZIP places correctly in Queens. Left as is.
+- Moved on the page: owners ZIP area only 1,876 to 1,859 and city area only 117 to 134; filings 1,866 to 1,859 and 91 to 98. City-unit moves on drawn addresses 113 to 105 (owners) and 29 to 26 (filings); the top-ten table above is unchanged. City units on the page: owners 663 (was 662). Base A, lien filings, TLC-listed: SDNY 22,982 to 22,986, EDNY 104,019 to 104,015 (the rows at 210 E 181st St); B and C unchanged. Ranked tops: filings County Queens 9,746 to 9,745, New York 4,458 to 4,459, Nassau 2,421 to 2,416; City New York 4,450 to 4,451; owners County Queens 6,404 to 6,402; City Brooklyn 2,839 to 2,838. Headlines unchanged (93% / 98%; owners 96.2%, 393 elsewhere).
+- Page text: the Group by City bullet gains "The check needs 3 or more of our matched addresses in the ZIP; 00000 is not a ZIP"; the owners legend note and the filings Details Geocoding line read "in the same ZIP (3 or more of them)". Docstrings of the module, 261e, 261f and 261h updated.
+- Checks after the fix: runner `--skip-agents` exit 0 (261d "to send 0"; 261f cross-checks and 261h's assert pass); stage 262's 13 files and `geocode_cache.csv` md5-identical before and after; all four inline script blocks and both data files parse (new Function); headless Edge at 1440 and 390: the three bases equal `bases_all`, no sideways scroll, no console message beyond GoatCounter declining localhost, the removed owners elements absent, the city-area popup intact; GoatCounter head block and the `#me` toast byte-identical to the clone's HEAD; no em dash, and the debtor address is nowhere described as where the owner filed.
+- Screens: `_screens/pass9/fix/116_pass9_{1440,390}_*.png` (the same twenty views as the pass 9 set) and `_tops9.json`.
+
+## Pass 10 (2026-10-13): filings boxes removed, continuous blue-to-red ramp
+
+William's messages, 2026-10-13, verbatim: "yes take this out" and "make sure to take this out please" (the filings view's summary box, "Where the medallions are"); "tahe this out as well" (the filings view's Details box, "Details: medallions with liens"); "for hte visualizaiton can you put a more cintounce colloring is that possible not discrete ocnitnous"; "also the color scheme is confusing it should go from blue cold to red hot why is orange at the ennd of the scale fix this please get the websuit deisgn agent on this thisis bad ui design no?".
+
+### What was removed
+
+- **Filings view, summary box:** the "Where the medallions are" section, its two headline sentences, the list under them and every facts bullet, with the JS that filled them. Nothing from it is recreated elsewhere.
+- **Filings view, Details box:** "Details: medallions with liens" with all of its sections (What the data holds, Three ways to count, Group by, Left out, Geocoding, Map and search), with the JS that filled it and the Group by list it printed. Nothing from it is recreated elsewhere.
+- **Kept:** the title and subtitle, the view switch, the "Two ways onto the map" block, the Count, years and TLC controls, the court bars, the map and Group by, the legends, the ranked table, the medallion history search. The missing-data message now shows in the filings line of the "Two ways onto the map" block.
+- Page only: stage 262, the 261 data builders and every data file are untouched (md5 of both JSON files and every file under `data/2_analysis/medallion_filing_locations/` identical before and after; the built `_data.js` and `_filings.js` byte-identical to pass 9).
+
+### Count and Measure buttons
+
+The Details box explained the count options, so each button now carries a one-line explanation, shown on hover and keyboard focus (and read out as the button's description). A page tooltip replaces the browser's title tooltip, which waits a second and does not show on touch.
+
+| Button | Text |
+|---|---|
+| Medallions, every address | A medallion counts once in every court it ever had a debtor address in |
+| Medallions, latest filing | Each medallion counts once, at the debtor address on its newest filing |
+| Lien filings | Every placed lien filing counts once |
+| Every address on file (owners) | A name counts once in every court where it has an address, any year |
+| Most recent address (owners) | The address on the name's newest filing of any kind |
+
+The fourth location tier's rule (the Census could not place the address) now sits under the tier key in both views: `#precNote` in the owners view, `#fprecNote` in the filings view, same sentence, each with its own counts (filings: 98 city area only, 7 off the map).
+
+### The ramp
+
+- **One continuous ramp** replaces the seven quantile classes. Stops, evenly spaced, in one constant (`RAMP_STOPS` in the template): `#8cc0ff` light blue, `#9a90f4` violet, `#c25ccc` magenta, `#da3a66` rose, `#c71f2a` red. Nothing follows red (the old top class was orange). Colours between stops are straight RGB blends.
+- **Log scale.** Colour is log10(count) over log10(the level's largest count): 1 is blue, the largest is red. The domain is recomputed whenever the level, view, years, count option or TLC setting changes. Counts run 1 to about 13,000, so a linear scale would paint nearly every unit blue.
+- **Same code for every level:** state, court and county polygons, city and ZIP bubbles, hexagons, in both views. A zero count keeps the no-data fill (no fill).
+- **Legend:** one gradient bar with the whole ramp; ticks at 1, 10, 100, 1,000 and 10,000 where they fall inside the domain, plus the largest count. A power of ten within 30% of the bar of the largest count is left off so labels do not touch (state and court: 1, 10, 100 and the maximum; county, city, ZIP and hexagon the same). The bar is 216 px wide on a desktop and 168 px on a phone.
+- **Checked:** lightness falls steadily from the light-blue end to the red end under normal vision, deuteranopia and protanopia (Machado simulation, 17 points along the bar, relative luminance). The earlier saturated-blue ramp lost order in the middle under deuteranopia, so the low end was lightened and the top darkened.
+- Largest count per level, TLC list, every address, all years: state 13,109; court 12,103; county 9,745; city 5,303; ZIP 3,635; hexagon 1,454. Owners view, every address on file: state 10,237; court 8,946; county 6,402; city 2,838; ZIP 1,870; hexagon 769.
+- Hover highlight, tooltip with the exact count and table row lighting are unchanged. The class-break code (`breaks`, `classOf`, `rampFor`, `scaleRows`) is gone.
+
+### Checks (headless, Edge, 1440 and 390)
+
+- No console errors beyond the GoatCounter script (blocked on purpose); no horizontal scroll at 320, 390 or 1440.
+- Legend ticks do not overlap and sit inside the legend at every level in both views, at both widths.
+- Distinct fill colours per level, filings view 1440: state 29, court 28, county 40, city 96, ZIP 133, hexagon 138.
+- No em dash in the template, the filings module, the built page or this note.
+
+### Screens
+
+`_screens/pass10/116_pass10_{1440,390}_{n}_{what}.png`: landing, state, court, county, city, ZIP, hexagon, legend close-up, page top, owners landing and owners map; 1440 also the Count button tooltip.
 
 ## Status
 

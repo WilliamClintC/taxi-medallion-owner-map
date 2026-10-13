@@ -822,10 +822,12 @@ ul.b li::marker { color:var(--muted); }
 .gbrow { margin:0 0 var(--space-3); }
 .yearf input { width:5.5em; font:inherit; font-size:.9375rem; padding:4px 6px; background:var(--bg); color:var(--fg); border:1px solid var(--hair-2); border-radius:6px; font-variant-numeric:tabular-nums; }
 
-/* answer */
-.answer { font-size:1.25rem; line-height:1.45; margin:0 0 var(--space-3); max-width:70ch; text-wrap:pretty; }
-.answer b { font-weight:650; }
-.facts { color:var(--fg-2); font-size:.9375rem; }
+/* the two routes onto the map (pass 9): one bullet per view, under the view switch, in both views */
+.how { padding-block:var(--space-3); }
+.how h2 { font-size:1rem; margin-bottom:var(--space-2); color:var(--fg-2); }
+.how ul.b { color:var(--fg-2); font-size:.9375rem; max-width:90ch; }
+.how ul.b li { margin:4px 0; }
+.how b { color:var(--fg); font-weight:600; }
 
 /* filter row */
 fieldset.filters { border:0; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:var(--space-2) var(--space-5); align-items:center; }
@@ -886,7 +888,17 @@ figure.bars figcaption { margin-bottom:var(--space-3); }
 .maplegend .mt { font-weight:600; font-size:.875rem; }
 .maplegend .sw { display:flex; align-items:center; gap:6px; font-variant-numeric:tabular-nums; }
 .maplegend .sw i { width:14px; height:12px; border-radius:2px; flex:none; border:1px solid rgba(255,255,255,.15); }
+.maplegend .rampbox { margin-top:6px; width:216px; max-width:100%; }
+.maplegend .rampbar { height:12px; border-radius:3px; border:1px solid rgba(255,255,255,.15); }
+.maplegend .rampticks { position:relative; height:16px; margin-top:2px; font-variant-numeric:tabular-nums; }
+.maplegend .tk { position:absolute; top:0; white-space:nowrap; transform:translateX(-50%); }
+.maplegend .tk.l { transform:none; }
+.maplegend .tk.r { transform:translateX(-100%); }
+.maplegend .tk::before { content:""; position:absolute; top:-3px; left:50%; width:1px; height:3px; background:var(--muted); }
+.maplegend .tk.l::before { left:0; }
+.maplegend .tk.r::before { left:100%; }
 .maplegend .hint { color:var(--muted); margin-top:4px; }
+.btip { position:fixed; z-index:1002; max-width:min(22rem, calc(100vw - 24px)); background:var(--raised); color:var(--fg); border:1px solid var(--hair-2); border-radius:6px; padding:6px 10px; font-size:.8125rem; line-height:1.4; box-shadow:0 2px 8px rgba(0,0,0,.5); pointer-events:none; }
 .status { font-size:.8125rem; color:var(--muted); margin-top:var(--space-2); }
 aside.side { display:flex; flex-direction:column; gap:var(--space-4); min-width:0; }
 .views { display:flex; flex-wrap:wrap; gap:var(--space-2); }
@@ -947,12 +959,6 @@ tr.hl td { background:var(--hl); }
 
 /* details */
 th.court { min-width:8.5em; }
-details.method { background:var(--surface); border:1px solid var(--hair); border-radius:10px; }
-details.method > summary { cursor:pointer; padding:var(--space-3) var(--space-4); font-weight:600; font-size:1.125rem; }
-details.method .body { padding:0 var(--space-4) var(--space-4); display:grid; grid-template-columns:repeat(auto-fit, minmax(min(26rem, 100%), 1fr)); gap:var(--space-5); }
-details.method section { min-width:0; }
-details.method ul.b { font-size:.9375rem; color:var(--fg-2); }
-details.method ul.b ul { margin:2px 0; padding-left:1.1em; }
 .src { display:inline-block; font-size:.75rem; font-weight:600; padding:0 6px; border-radius:4px; background:rgba(255,255,255,.08); color:var(--fg-2); margin-right:2px; white-space:nowrap; }
 .tag { display:inline-block; font-size:.75rem; font-weight:600; padding:0 6px; border-radius:4px; background:var(--warn-bg); color:var(--warn); }
 .warn { color:var(--warn); }
@@ -978,11 +984,11 @@ footer { padding-block:0 var(--space-6); color:var(--muted); font-size:.875rem; 
   .mapgrid { grid-template-columns:minmax(0, 1fr) 340px; align-items:start; }
 }
 @media (max-width: 40em) {
-  .maplegend { max-width:170px; padding:6px 8px; font-size:.75rem; }
+  .maplegend .rampbox { width:168px; }
+  .maplegend { max-width:200px; padding:6px 8px; font-size:.75rem; }
   .maplegend .hint { display:none; }
   .leaflet-tooltip.bigtip { white-space:normal; max-width:220px; }   /* the measure line wraps instead of running off the map */
   .brow, .bars summary.brow { grid-template-columns:minmax(0, 1fr); gap:2px; }
-  .answer { font-size:1.125rem; }
   .sticky1 td.l:first-child, .sticky1 th.l:first-child { white-space:normal; min-width:8.5em; max-width:9.5em; }
   #map { height:62vh; min-height:360px; }
   .viewsw .seg button { font-size:.9375rem; }
@@ -1001,16 +1007,16 @@ footer { padding-block:0 var(--space-6); color:var(--muted); font-size:.875rem; 
 </header>
 <main id="main" class="wrap">
   <noscript><p>Turn on JavaScript to see the counts and the map.</p></noscript>
-  <section class="panel" data-v="filings" aria-labelledby="h-fanswer">
-    <h2 id="h-fanswer">Where the medallions are</h2>
-    <p class="answer" id="fwhy">Loading the lien filings…</p>
-    <p class="answer" id="fanswer"></p>
-    <ul class="b facts" id="ffacts"></ul>
+  <section class="panel how" aria-labelledby="h-how">
+    <h2 id="h-how">Two ways onto the map</h2>
+    <ul class="b">
+      <li><b>Medallions with liens.</b> Every UCC (Uniform Commercial Code) filing in our LexisNexis collection whose collateral names a medallion number, placed at the debtor address on the filing. No name matching. The filings run from 1966 to 2026. Open, terminated and lapsed liens all count. <span id="howF">Loading the filing counts…</span></li>
+      <li><b>Owners by name.</b> The TLC owner lists cover everyone who held a medallion from 7 March 2013 to early 2026. The TLC published no owner list before 2013. Each owner name is matched to the debtor names on UCC filings; word order is ignored. A LexisNexis filing counts only if it also names one of that owner's own medallions. <span id="howO"></span></li>
+    </ul>
   </section>
-
   <section aria-labelledby="h-fcourts" class="panel" data-v="filings">
     <h2 id="h-fcourts">Bankruptcy courts</h2>
-    <div class="frow"><span class="lab">Count</span><div class="seg f" id="basis"><button type="button" data-b="B" aria-pressed="true">Medallions, every address</button><button type="button" data-b="C" aria-pressed="false">Medallions, latest filing</button><button type="button" data-b="A" aria-pressed="false">Lien filings</button></div></div>
+    <div class="frow"><span class="lab">Count</span><div class="seg f" id="basis"><button type="button" data-b="B" aria-pressed="true" data-tip="A medallion counts once in every court it ever had a debtor address in" aria-description="A medallion counts once in every court it ever had a debtor address in">Medallions, every address</button><button type="button" data-b="C" aria-pressed="false" data-tip="Each medallion counts once, at the debtor address on its newest filing" aria-description="Each medallion counts once, at the debtor address on its newest filing">Medallions, latest filing</button><button type="button" data-b="A" aria-pressed="false" data-tip="Every placed lien filing counts once" aria-description="Every placed lien filing counts once">Lien filings</button></div></div>
     <div class="frow yearf" style="margin-top:var(--space-2)"><span class="lab">Filed in</span><label><input type="number" id="y0" min="1900" max="2100"> to <input type="number" id="y1" min="1900" max="2100"></label><button type="button" id="yAll">All years</button><button type="button" id="y2012">2012 onward</button><label class="tog" style="padding:0"><input type="checkbox" id="offtlc"><span>Include medallions not on the TLC list</span><span class="n" id="offtlc_n"></span></label></div>
     <p class="ncap" id="basisNote"></p>
     <figure class="bars f" style="margin-top:var(--space-3)">
@@ -1020,17 +1026,10 @@ footer { padding-block:0 var(--space-6); color:var(--muted); font-size:.875rem; 
     </figure>
   </section>
 
-  <section class="panel" data-v="owners" hidden aria-labelledby="h-answer">
-    <h2 id="h-answer">Where the owners are</h2>
-    <p class="answer" id="answer"></p>
-    <p class="answer" id="answer2"></p>
-    <ul class="b facts" id="facts"></ul>
-  </section>
-
   <section aria-labelledby="h-courts" class="panel" data-v="owners" hidden>
     <h2 id="h-courts">Bankruptcy courts</h2>
     <fieldset class="filters" id="filters"><legend>Show</legend></fieldset>
-    <div class="frow" style="margin-top:var(--space-3)"><span class="lab">Count</span><div class="seg" id="measure"><button type="button" data-m="ever" aria-pressed="true">Every address on file</button><button type="button" data-m="latest" aria-pressed="false">Most recent address</button></div><span class="small muted" id="measureNote"></span></div>
+    <div class="frow" style="margin-top:var(--space-3)"><span class="lab">Count</span><div class="seg" id="measure"><button type="button" data-m="ever" aria-pressed="true" data-tip="A name counts once in every court where it has an address, any year" aria-description="A name counts once in every court where it has an address, any year">Every address on file</button><button type="button" data-m="latest" aria-pressed="false" data-tip="The address on the name's newest filing of any kind" aria-description="The address on the name's newest filing of any kind">Most recent address</button></div><span class="small muted" id="measureNote"></span></div>
     <figure class="bars" style="margin-top:var(--space-4)">
       <figcaption><span class="title" id="barsTitle"></span></figcaption>
       <div id="bars" role="list"></div>
@@ -1065,6 +1064,7 @@ footer { padding-block:0 var(--space-6); color:var(--muted); font-size:.875rem; 
           <label class="tog"><input type="checkbox" id="fdlines" checked><span>Show bankruptcy court boundaries (NY, NJ, CT, PA)</span></label>
           <p class="small muted" style="margin:var(--space-1) 0 0" id="fpointNote"></p>
           <div class="keyrow" id="fpreclegend" style="margin-top:var(--space-2)"></div>
+          <p class="small muted" style="margin:var(--space-2) 0 0" id="fprecNote"></p>
         </div>
         <div class="panel hist" data-v="filings">
           <h3><label for="mq">Trace one medallion</label></h3>
@@ -1078,6 +1078,7 @@ footer { padding-block:0 var(--space-6); color:var(--muted); font-size:.875rem; 
           <label class="tog"><input type="checkbox" id="dlines" checked><span>Show bankruptcy court boundaries (NY, NJ, CT, PA)</span></label>
           <p class="small muted" style="margin:var(--space-1) 0 0">Each point is one owner at one address. Spellings of the same address merge into one point.</p>
           <div class="keyrow" id="preclegend" style="margin-top:var(--space-2)"></div>
+          <p class="small muted" style="margin:var(--space-2) 0 0" id="precNote"></p>
         </div>
         <div class="panel" data-v="owners" hidden>
           <h3><label for="q">Find a name</label></h3>
@@ -1101,14 +1102,6 @@ footer { padding-block:0 var(--space-6); color:var(--muted); font-size:.875rem; 
     <details class="small" style="margin-top:var(--space-3)"><summary style="cursor:pointer;color:var(--link)">Show all other courts, by group</summary><div class="tablewrap" tabindex="0" aria-label="All other courts by group" style="margin-top:var(--space-2)"><table id="others"></table></div></details>
   </section>
 
-  <details class="method" id="fmethod" data-v="filings">
-    <summary>Details: medallions with liens</summary>
-    <div class="body" id="fmethodBody"></div>
-  </details>
-  <details class="method" id="method" data-v="owners" hidden>
-    <summary>Details: owners by name</summary>
-    <div class="body" id="methodBody"></div>
-  </details>
 </main>
 <footer class="wrap" id="foot"></footer>
 <div class="toast" id="toast" role="status" hidden></div>
@@ -1137,7 +1130,7 @@ footer { padding-block:0 var(--space-6); color:var(--muted); font-size:.875rem; 
 // C medallions by their most recent filing (latest date, then filing number; ties to the lowest block and address
 // index, compared as strings as 262d does). The all-years numbers equal summary.json (asserted in 261h; checked headless).
 window.FIG116_FILINGS = function (ctx) {
-  const {L, map, D, fmt, pct1, pct0, esc, $, courtFull, NONE, DC, COL, SHAPE, LABEL, icon, ShapeMarker, makeCluster, proj, scaleRows, barRows, popOpts, unitKey, addUnit, finishUnits, cityLabel, topCityPerZip, UNIT, GROUPBY, indexCounties} = ctx;
+  const {L, map, D, fmt, pct1, pct0, esc, $, courtFull, NONE, DC, COL, SHAPE, LABEL, icon, ShapeMarker, makeCluster, proj, rampLegend, barRows, popOpts, unitKey, addUnit, finishUnits, cityLabel, topCityPerZip, UNIT, indexCounties} = ctx;
   let F = null, R = null, A = null, axy = null, RM = null, RMt = null, rowsAt = null, typeAt = null, zipCities = null;
   let basis = 'B', y0 = 0, y1 = 9999, offTlc = false, act = [], actAt = {}, medIdx = null, BS = null;
   let markers = null; const markerOf = {};
@@ -1148,7 +1141,7 @@ window.FIG116_FILINGS = function (ctx) {
   const allYears = () => y0 <= +F.counts.years[0] && y1 >= +F.counts.years[1];
   const BASIS = {A: 'Lien filings', B: 'Medallions, every address', C: 'Medallions, latest filing'};
   const BASIS_TITLE = {A: 'Lien filings per bankruptcy court', B: 'Medallions per bankruptcy court, every address', C: 'Medallions per bankruptcy court, latest filing'};
-  const PRECL = {exact: 'exact', approximate: 'approximate', 'ZIP-level': 'ZIP area only'};
+  const PRECL = {exact: 'exact', approximate: 'approximate', 'ZIP-level': 'ZIP area only', 'city-level': 'city area only'};
   // the note says "ever" only when the year filter is off
   const BASIS_NOTE = {
     A: () => 'Each lien filing counts once, at its debtor address. This shows how many filings each court covers.',
@@ -1173,7 +1166,7 @@ window.FIG116_FILINGS = function (ctx) {
     const s = document.createElement('script');
     s.src = ctx.dataFile;
     s.onload = () => { init(); P.ready = true; P._cbs.forEach(f => f()); };
-    s.onerror = () => { $('fwhy').textContent = `The data file ${ctx.dataFile} is missing. Keep it in the same folder as this page.`; };
+    s.onerror = () => { $('howF').textContent = `The data file ${ctx.dataFile} is missing. Keep it in the same folder as this page.`; };
     document.head.appendChild(s);
   };
 
@@ -1190,7 +1183,12 @@ window.FIG116_FILINGS = function (ctx) {
     $('y0').value = y0; $('y1').value = y1;
     $('offtlc_n').textContent = `${fmt(F.counts.off_tlc_medallions)} medallions`;
     $('fpointNote').textContent = 'Each point is one debtor address. Click it to list its lien filings under the current filters.';
-    wire(); refilter(); method();
+    // the filings line of "Two ways onto the map" (pass 9); the 95.7% is the Lexis collection's share of the medallions we set out to collect
+    $('howF').textContent = `${fmt(F.counts.rows)} located filings naming ${fmt(F.counts.medallions_tlc)} medallions on the NYC Taxi and Limousine Commission (TLC) lists. The collection covers 95.7% of the medallions we set out to collect.`;
+    wire(); refilter();
+    // the fourth location tier's rule, under the tier key (pass 10; parallel to #precNote in the owners view)
+    const pr = F.counts.precision || {}, rc = F.counts.recovered || {};
+    $('fprecNote').textContent = `Addresses the Census could not place sit at the middle of our matched addresses in the same ZIP (3 or more of them), else in the same city, else at the Census point for that city. ${fmt(pr['city-level'] || 0)} are city area only. ${fmt(rc.still_unmapped || 0)} stay off the map.`;
   }
 
   function refilter() {
@@ -1245,25 +1243,7 @@ window.FIG116_FILINGS = function (ctx) {
         : basis === 'B' ? `${fmt(bs.nMeds)} medallions; the bars add up to ${fmt(tot)} because a medallion counts in every court it appears in. ${fmt(bs.onlyNY)} medallions (${pct1(bs.onlyNY, bs.nMeds)}) appear only in New York or New Jersey courts, and ${fmt(bs.nMeds - bs.onlyNY)} (${pct1(bs.nMeds - bs.onlyNY, bs.nMeds)}) appear elsewhere as well.`
         : `${fmt(tot)} medallions, each counted once at the debtor address on its latest filing.`;
     }
-    answer(bs);
   };
-  function answer(bs) {
-    const ny = o => DC.reduce((s, d) => s + (o[d] || 0), 0);
-    const nC = Object.values(bs.C).reduce((s, v) => s + v, 0), out = bs.nMeds - bs.onlyNY;
-    if (!bs.nMeds) { $('fwhy').textContent = 'No medallion has a lien filing in these years.'; $('fanswer').textContent = ''; $('ffacts').innerHTML = ''; return; }
-    const top = Object.entries(bs.B).filter(([k]) => !DC.includes(k)).sort((a, b) => b[1] - a[1]).slice(0, 3);
-    $('fwhy').innerHTML = `<b>${pct0(bs.onlyNY, bs.nMeds)} of ${fmt(bs.nMeds)} medallions with a UCC lien ${allYears() ? 'have only ever had' : 'only had, in the years chosen,'} a debtor address in New York or New Jersey.</b>`;
-    $('fanswer').textContent = `${pct0(ny(bs.C), nC)} have their latest lien filing${allYears() ? '' : ' in the years chosen'} there.`;
-    const c = F.counts;
-    $('ffacts').innerHTML = [
-      `${fmt(out)} medallions (${pct0(out, bs.nMeds)}) had a debtor address elsewhere at least once.${top.length ? ' The most common courts outside New York and New Jersey:<ul>' + top.map(([k, v]) => `<li>${esc(courtFull(k))}: ${fmt(v)} medallions</li>`).join('') + '</ul>' : ''}`,
-      `Counts cover ${offTlc ? 'every medallion named on a lien, including those not on the' : 'medallions on the'} NYC Taxi and Limousine Commission (TLC) list, ${allYears() ? 'filed in any year' : `filed ${y0} to ${y1}`}`,
-      `The lender files each lien; the map places it at the debtor address on the filing. No owner names are matched, because the medallion number in the lien's collateral identifies the medallion <span class="src">Lexis</span>`,
-      `${fmt(c.medallions)} medallions have a located address. ${fmt(c.medallions_tlc)} are on the TLC list; ${fmt(c.off_tlc_medallions)} are not (Philadelphia and Newark numbers, typos) and stay out unless ticked`,
-      `Filing years run ${c.years[0]} to ${c.years[1]}, by each lien's own filing date, not a later continuation or termination`
-    ].map(x => `<li>${x}</li>`).join('');
-  }
-
   // ---- what the shared map code asks for ----
   // {units: {key: {n, mix, label, latlng}}, N, noun, pairs} on the basis chosen: A rows; B medallions once per unit; C medallions at the latest filing
   P.unitCounts = level => {
@@ -1299,8 +1279,10 @@ window.FIG116_FILINGS = function (ctx) {
     markers = [];
     A.forEach((ad, a) => {
       const g = typeAt[a], c = COL[g];
+      // exact: filled; approximate: half filled; ZIP area only: a ring; city area only (pass 9): a dashed ring
       const st = ad[3] === 'exact' ? {fillOpacity: .9, weight: 1, radius: 6, color: '#0d0d0d'}
-        : ad[3] === 'approximate' ? {fillOpacity: .45, weight: 1.2, radius: 6, color: c} : {fillOpacity: 0, weight: 2, radius: 7, color: c};
+        : ad[3] === 'approximate' ? {fillOpacity: .45, weight: 1.2, radius: 6, color: c}
+        : ad[3] === 'city-level' ? {fillOpacity: 0, weight: 1.6, radius: 7, color: c, dashArray: '3 3'} : {fillOpacity: 0, weight: 2, radius: 7, color: c};
       const m = new ShapeMarker([ad[0], ad[1]], Object.assign({fillColor: c, shape: SHAPE[g], grp: g}, st));
       m.bindPopup(() => popup(a), popOpts(380));
       m._a = a; m._vis = false;
@@ -1314,10 +1296,10 @@ window.FIG116_FILINGS = function (ctx) {
     if (rem.length) cluster.removeLayers(rem);
     if (add.length) cluster.addLayers(add);
   };
-  P.legend = (m, br) => {
+  P.legend = (m, max) => {
     if (m === 'points') return `<div class="mt">Every debtor address</div>` + ['fperson', 'forg'].map(g => `<div class="sw">${icon(g, 14)} ${esc(LABEL[g])}</div>`).join('') + `<div class="hint">Shape shows the commoner debtor type at the address; a ring means several addresses</div>`;
-    return `<div class="mt">${basis === 'A' ? 'Lien filings' : 'Medallions'} per ${m === 'hex' ? 'hexagon (0.5 mi)' : UNIT[m]}, ${basis === 'A' ? 'all filings' : basis === 'B' ? 'every address' : 'latest filing'}</div>` + scaleRows(br).map(([c, t]) => `<div class="sw"><i style="background:${c}"></i>${t}</div>`).join('')
-      + `<div class="hint">Colour shows the count only, blue lowest to red highest. The year and TLC settings apply. ${m === 'hex' ? 'Zoom in for each address.' : m === 'city' || m === 'zip' ? 'Click a bubble to zoom to it.' : 'Click a shape to zoom to it.'}</div>`;
+    return `<div class="mt">${basis === 'A' ? 'Lien filings' : 'Medallions'} per ${m === 'hex' ? 'hexagon (0.5 mi)' : UNIT[m]}, ${basis === 'A' ? 'all filings' : basis === 'B' ? 'every address' : 'latest filing'}</div>` + rampLegend(max)
+      + `<div class="hint">Colour shows the count only, on a log scale: blue lowest, red highest. The year and TLC settings apply. ${m === 'hex' ? 'Zoom in for each address.' : m === 'city' || m === 'zip' ? 'Click a bubble to zoom to it.' : 'Click a shape to zoom to it.'}</div>`;
   };
   P.note = m => {
     const meas = basis === 'A' ? 'Each lien filing counts once, at its debtor address. The year and TLC settings apply.' : basis === 'B' ? 'A medallion counts once in every unit where it had a debtor address. The year and TLC settings apply.' : 'Each medallion counts once, at the debtor address on its latest filing. The year and TLC settings apply.';
@@ -1326,7 +1308,7 @@ window.FIG116_FILINGS = function (ctx) {
       state: [`Each state is shaded by its number of ${what}.`, meas, 'Hover a state to see its count; click it to zoom.'],
       court: [`Each bankruptcy court is shaded by its number of ${what}, as one shape. Dashed lines mark the court boundaries.`, meas, 'Hover to see the court, its area and its count; click to zoom to the court.'],
       county: [`Each county is shaded by its number of ${what}.`, meas, 'Hover a county to see its count; click it to zoom.'],
-      city: [`One bubble per city. Size and colour show the number of ${what}.`, meas, 'The city comes from the Census address match, else from the filing with spellings merged. Click a bubble to zoom.'],
+      city: [`One bubble per city. Size and colour show the number of ${what}.`, meas, 'The city comes from the Census address match, else from the filing (spellings merged, checked against the ZIP). Click a bubble to zoom.'],
       zip: [`One bubble per ZIP code. Size and colour show the number of ${what}.`, meas, 'Each bubble sits at the centre of the Census ZIP area, else at the mean of its addresses. Click a bubble to zoom.'],
       hex: [`Hexagons about half a mile across, shaded by their number of ${what}.`, meas, 'Hover for the count and the medallions inside; click, or zoom in, to see each address.'],
       points: ['Street level: every debtor address with a lien filing in the years chosen.', 'Circle: mostly person debtors. Diamond: mostly company debtors.', 'Click an address to see its lien filings: debtor, date, lender, medallions, type and record number.']
@@ -1400,45 +1382,6 @@ window.FIG116_FILINGS = function (ctx) {
   P.setBasis = b => { basis = b; $('basis').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x.dataset.b === b ? 'true' : 'false')); };
   P.getBasis = () => basis;
 
-  function method() {
-    const S = F.summary, g = S.guards || {}, geo = S.geocode || {}, pa = geo.precision_addresses || {}, c = F.counts;
-    const sh = S.share_nynj || {};
-    const J = Object.entries(S.jurisdiction || {}).slice(0, 6).map(([k, v]) => `${esc(k)} ${fmt(v)}`).join(', ');
-    const sec = [
-      ['What the data holds', [
-        'Each lien filing is one debtor address on one Lexis UCC record whose collateral names a medallion number <span class="src">Lexis</span>. A record that lists two debtors counts as two lien filings',
-        'No owner list and no name matching: the debtor is whoever the filing names',
-        `${fmt(S.records)} records (the fullest snapshot of each filing); ${fmt(S.rows)} lien filings; ${fmt((S.addresses || {}).rows_with_address)} with a usable address; ${fmt((S.addresses || {}).located_rows)} placed on the map`,
-        `${fmt(c.rows)} lien filings are placed at ${fmt(c.addresses)} distinct addresses`,
-        `${fmt(S.medallions)} medallions are named; ${fmt(S.medallions_on_tlc_list)} are on the TLC list; ${fmt(S.medallions_located)} have a located address`,
-        `${fmt(c.persons)} lien filings have a person as debtor and ${fmt(c.organisations)} a company, judged from the debtor name alone`,
-        `Filing jurisdictions (records): ${J}`]],
-      ['Three ways to count', [
-        'Medallions, every address (the default): a medallion counts once in every court, state, county, city or ZIP where it had a debtor address (ever, or in the years chosen)',
-        'Medallions, latest filing: each medallion counts once, at the first-listed debtor address on its most recent filing (in the years chosen)',
-        'Lien filings: every placed lien filing counts once, in its unit',
-        `New York or New Jersey share, all years, TLC list only: medallions counted in every court ${pct1((sh.B_medallions_ever_tlc || {}).numerator, (sh.B_medallions_ever_tlc || {}).denominator)}, medallions at their latest filing ${pct1((sh.C_medallions_latest_tlc || {}).numerator, (sh.C_medallions_latest_tlc || {}).denominator)}, lien filings ${pct1((sh.A_rows_tlc || {}).numerator, (sh.A_rows_tlc || {}).denominator)}`,
-        `Medallions whose latest filing spans two or more courts: ${fmt((S.by_district || {}).C_medallions_whose_latest_filing_spans_districts)} (counted at the first-listed debtor)`,
-        'The page recomputes all three for the years and TLC setting chosen']],
-      ['Group by: how the map units are built', GROUPBY],
-      ['Left out', [
-        `Debtor is itself a lender (a credit union pledging its loans): ${fmt((g.rows_dropped || {}).lender_as_debtor)} lien filings`,
-        `Debtor name carries C/O a lender: ${fmt((g.rows_dropped || {}).care_of_lender)} lien filings`,
-        `Debtor address equals a lender's address on the record: ${fmt((g.rows_dropped || {}).lender_address)} lien filings`,
-        `Fleet corporations at their funding corporation's garage stay in (${fmt((g.shared_address_kept_flagged || {}).broker)} lien filings)`,
-        `Geocodes that landed in the wrong state were rejected: ${fmt(g.wrong_state_rejected)} addresses`,
-        `Medallions not on the TLC list (Philadelphia and Newark numbers, typo variants): ${fmt(c.off_tlc_medallions)}, with ${fmt(c.off_tlc_rows_only)} lien filings that name no listed medallion. They stay out unless ticked`]],
-      ['Geocoding', [
-        `US Census batch geocoder: exact ${fmt(pa.exact)}, approximate ${fmt(pa.approximate)}, ZIP area only ${fmt(pa['ZIP-level'])}, unmapped ${fmt(pa.unmapped)} addresses`,
-        'County from the geocoder, else from the point; court under 28 U.S.C. 81 to 131',
-        "One known wrong entry stays as is: CABLE CAB CORP, a Queens street with the lender's Irving, TX city and ZIP, lands in the Northern District of Texas"]],
-      ['Map and search', [
-        'Auto: medallions per county when zoomed out; per half-mile hexagon at mid zoom; one point per debtor address at street level. Group by pins State, Court, County, City, ZIP, Hexagon or Address instead',
-        'Trace one medallion: type its number to list every located lien filing that names it, oldest first, and draw its addresses on the map (all years; the TLC setting does not apply)',
-        'Violet marks this view. The owners view keeps blue for owners, orange for lenders and teal for agents. The blue-to-red scale on shaded units is a count, not a group']]
-    ];
-    $('fmethodBody').innerHTML = sec.map(([h, xs]) => `<section><h3>${h}</h3><ul class="b">${xs.map(x => `<li>${x}</li>`).join('')}</ul></section>`).join('');
-  }
   return P;
 };
 
@@ -1446,7 +1389,7 @@ window.FIG116_FILINGS = function (ctx) {
 <script>
 (function () {
 const D = window.FIG116;
-if (!D) { document.getElementById('answer').textContent = 'The data file 116_owner_lender_locations_map_data.js is missing. Keep it in the same folder as this page.'; return; }
+if (!D) { document.getElementById('howF').textContent = 'The data file 116_owner_lender_locations_map_data.js is missing. Keep it in the same folder as this page.'; return; }
 
 // ---- visit-log confirmation (#me / #me-off, set up in <head>) ----
 window.FIG116_TOAST = state => {
@@ -1468,18 +1411,19 @@ const SHAPE_NAME = {circle:'circle', square:'square', diamond:'diamond', triangl
 const LABEL = Object.assign({fperson:'Person debtor', forg:'Company debtor'}, D.group_label);
 const FAMS = [['Owners', ['individual', 'llc', 'company_other']], ['Lenders', ['lender', 'lender_spv']], ['Managing agents', ['agent']]];
 const OWN = ['individual', 'llc', 'company_other'];
-// one-line glosses, shown as chip tooltips, under the counts tables and in the Details list; no trailing full stop
+// one-line glosses, shown as chip tooltips, under the counts tables; no trailing full stop
 const GLOSS = {individual: 'A person named as the medallion owner on the TLC owner lists',
   llc: 'A company with LLC in its name, named as the medallion owner on the TLC owner lists',
   company_other: 'A company without LLC in its name (INC, CORP and others), named as the medallion owner on the TLC owner lists',
   lender: 'A bank, credit union or finance company that filed liens on medallions. No owner list covers lenders, so they are counted from the lien filings',
   lender_spv: 'A series LLC that a lender set up to hold medallions it took back',
   agent: 'The garage or management firm the TLC records as running a medallion for its owner. Addresses come from the TLC licence files'};
-// shading ramp (pass 8): low to high, deep blue, blue, violet, magenta, rose red, red, hot orange; the lowest class
-// still reads against the dark basemap, the top class reads hottest. Not the group colours (the legend says it is a count).
-const RAMP = ['#2a5bd7', '#3f86f5', '#7b5cf0', '#b43fd3', '#e63a6e', '#f0463a', '#ff8a1f'];
+// shading ramp (pass 10): ONE continuous ramp, evenly spaced stops, interpolated in RGB. Low end light blue, high end red; lightness falls steadily so the order survives red-green colour blindness; change
+// the ends or the middle here and nowhere else. Violet and magenta sit between, so the middle stays saturated, nothing
+// follows red (no orange, no yellow), and lightness is monotone under normal vision, deuteranopia and protanopia.
+const RAMP_STOPS = ['#8cc0ff', '#9a90f4', '#c25ccc', '#da3a66', '#c71f2a'];
 const SRC = {'Lexis':'Lexis UCC', 'DOS v1':'NYS DOS UCC v1', 'DOS v2':'NYS DOS UCC v2', 'DOS corp':'NYS DOS corporations', 'TLC':'TLC Authorized list'};
-const PREC = {exact:'exact', approximate:'approximate', 'ZIP-level':'ZIP area only'};
+const PREC = {exact:'exact', approximate:'approximate', 'ZIP-level':'ZIP area only', 'city-level':'city area only'};
 const TIER = {own_medallion: 'the lien names this owner\'s medallion <span class="src">Lexis</span>', lien: 'the lien names a medallion <span class="src">Lexis</span>', family: 'the lien is not on Lexis; the lender mostly makes medallion loans <span class="src">Lexis</span>',
   c2: '<span class="warn">Lexis lists this lien as not a medallion loan; kept (open question)</span>',
   lexis_lien: 'the lien is not in the NYS DOS secured-party file; the Lexis record names a medallion <span class="src">Lexis</span>'};
@@ -1511,17 +1455,6 @@ indexCounties();
 const LV = {auto:'Auto', state:'State', court:'Court', county:'County', city:'City', zip:'ZIP', hex:'Hexagon (0.5 mi)', points:'Address'};
 const UNIT = {state:'state', court:'court', county:'county', city:'city', zip:'ZIP', hex:'hexagon', points:'address'};
 const SHADED = ['state', 'court', 'county', 'city', 'zip'];
-// the Group by explanation, shared by both Details sections
-const GROUPBY = [
-  'Auto: counties when zoomed out, half-mile hexagons closer in, addresses at street level. A level you choose holds at every zoom until you pick Auto',
-  'State: the first two digits of the county code the map shades (the county that sets the court). An address with no county takes the state on the filing',
-  'Court: each bankruptcy court is shaded as one shape, every county of the court included. Dashed lines mark the court boundaries',
-  'City: the city from the Census address match when it matched the address; otherwise the city as filed, in capitals, without trailing punctuation or a repeated state name. Both then have common spellings merged (NYC, N.Y.C., New York City and Manhattan become New York; Bklyn becomes Brooklyn; LIC and L.I.C. become Long Island City; S.I. becomes Staten Island; Flushing NY becomes Flushing) and abbreviations written out (a leading S, N, E or W; St before a name becomes Saint; Hts, Pk, Vlg, Hl, Cty, Bch and Isl)',
-  'City bubble: sits at the mean of the city\'s addresses. ZIP bubble: sits at the centre point of the Census ZIP area, else at the mean of its addresses. Bubble area grows with the count',
-  'Bubble numbers: a number is left off a bubble when it would overlap the number of a bigger bubble at the current zoom. Zoom in to see more, or read the ranked table, which lists every unit',
-  'ZIP label: the ZIP code and the most common city among its addresses',
-  'Colours: seven classes from blue (lowest) to red (highest). Class edges come from the counts themselves, at roughly the 20th, 40th, 60th, 80th, 90th and 97th percentiles of the nonzero counts, rounded to 1, 2 or 5 times a power of ten. Fewer classes appear when the counts have fewer distinct values. The legend lists the ranges',
-  'Ranked table: every unit at the chosen level, largest first. It shows the top 20, with a button for all. Click a row to zoom the map; hover a unit on the map to light its row'];
 const cityLabel = c => c[1] ? `${titleCase(c[1])}, ${c[0]}` : (c[0] ? `City not given, ${c[0]}` : 'City not given');
 function unitLabel(level, k, topCity) {
   if (k === NONE) return level === 'court' ? courtFull(NONE) : 'Outside the US or unknown';
@@ -1616,23 +1549,8 @@ const topCityPerZip = (items, zipOf, cityOf) => { const t = {}; items.forEach(x 
   const out = {}; Object.entries(t).forEach(([z, cs]) => { out[z] = Object.entries(cs).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))[0][0]; }); return out; };
 let ownZipCities = null;
 
-// ---- the answer (all owners, fixed; computed from the counts table) ----
-(function answer() {
-  const nm = own.names_mapped, ny = nynj(own), ev = own.ever;
-  const topEver = Object.entries(ev.other_detail || {}).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  $('answer').innerHTML = `<b>${pct0(ev.only_nynj, nm)} of ${fmt(nm)} owners have only ever had a New York or New Jersey address on a lien filing.</b>`;
-  $('answer2').innerHTML = `${pct0(ny, nm)} have their most recent address there.`;
-  const ind = byG.individual;
-  $('facts').innerHTML = [
-    `${fmt(ev.any_outside)} owners (${pct0(ev.any_outside, nm)}) have had an address elsewhere. The most common courts outside New York and New Jersey:<ul>${topEver.map(([k, v]) => `<li>${esc(courtFull(k))}: ${fmt(v)} owners</li>`).join('')}</ul>`,
-    `An owner is a name on the NYC Taxi and Limousine Commission (TLC) medallion owner lists. The lists hold ${fmt(own.names_on_list)} entries, about ${fmt(own.people_est)} people and companies, and ${fmt(own.names_mapped)} of them have an address on the map`,
-    `Addresses come from matching owner names to the debtor names on liens, ignoring word order. The medallions view skips name matching and uses the medallion number`,
-    `The lender files each lien; the owner's address is the debtor address on it. Sources: <span class="src">Lexis</span> LexisNexis UCC records and <span class="src">NYS DOS</span> New York Department of State UCC files`,
-    `Every address on file counts an owner in every court where a lien lists an address for it. A bankruptcy from 2012 on could have been filed where the owner lived then, so these are the courts worth requesting records from`,
-    `Most recent address uses the newest filing of any kind, managing-agent offices included. For ${fmt(own.latest_at_agent)} owners that address is an agent office`,
-    `These are addresses at the filing date, not current homes. The median filing year is ${D.median_filing_year}`
-  ].map(x => `<li>${x}</li>`).join('');
-})();
+// ---- the owners line of "Two ways onto the map" (the owners summary box was removed in pass 9, William 2026-10-13) ----
+$('howO').textContent = `${fmt(own.names_on_list)} entries on the lists; ${fmt(own.names_mapped)} have an address on the map.`;
 
 // ---- filter chips (scope: bar chart and map) ----
 $('filters').insertAdjacentHTML('beforeend', FAMS.map(([fam, gs]) => `<div class="fam"><span>${fam}</span>` + gs.map(g =>
@@ -1763,27 +1681,29 @@ const modeOf = z => z < Z_HEX ? 'county' : z < Z_PTS ? 'hex' : 'points';
 let pin = null, mode = null;
 const levelNow = () => pin || modeOf(map.getZoom());
 
-// class breaks: quantiles of the nonzero counts at 0.2, 0.4, 0.6, 0.8, 0.9, 0.97, rounded to 1-2-5 numbers, deduplicated
-function breaks(vals) {
-  const v = vals.filter(x => x > 0).sort((a, b) => a - b); if (!v.length) return [];
-  const nice = x => { if (x <= 1) return 1; const e = Math.pow(10, Math.floor(Math.log10(x))), m = x / e; return (m < 1.5 ? 1 : m < 3 ? 2 : m < 7 ? 5 : 10) * e; };
-  const b = [...new Set([0.2, 0.4, 0.6, 0.8, 0.9, 0.97].map(f => nice(v[Math.min(v.length - 1, Math.floor(f * v.length))])))].sort((a, b) => a - b);
-  return b.filter(x => x < v[v.length - 1]);
+// colour of a count: log10(n) over log10(max) along RAMP_STOPS; the domain runs from 1 to the level's largest count
+const STOP_RGB = RAMP_STOPS.map(h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)));
+function colorOf(n, max) {
+  const t = max > 1 ? Math.min(1, Math.max(0, Math.log10(Math.max(n, 1)) / Math.log10(max))) : 0;
+  const x = t * (STOP_RGB.length - 1), i = Math.min(Math.floor(x), STOP_RGB.length - 2), f = x - i;
+  const c = STOP_RGB[i].map((v, k) => Math.round(v + (STOP_RGB[i + 1][k] - v) * f));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
 }
-const classOf = (n, br) => { let i = 0; while (i < br.length && n > br[i]) i++; return i; };
-// k classes take k colours spread over the ramp, the first always the deep blue and the last the hot orange
-const rampFor = br => { const k = br.length + 1; if (k >= RAMP.length) return RAMP.slice(0, k); if (k === 1) return [RAMP[1]]; const out = []; for (let i = 0; i < k; i++) out.push(RAMP[Math.round(i * (RAMP.length - 1) / (k - 1))]); return out; };
-function scaleRows(br) {
-  const cols = rampFor(br), out = [];
-  for (let i = 0; i <= br.length; i++) {
-    const lo = i ? br[i - 1] + 1 : 1, hi = br[i];
-    out.push([cols[i], i === br.length ? `${fmt(lo)} or more` : lo === hi ? fmt(lo) : `${fmt(lo)} to ${fmt(hi)}`]);
-  }
-  return out;
+const maxOf = vals => vals.reduce((m, v) => v > m ? v : m, 0);
+// legend: one gradient bar, the whole ramp, ticks at 1, 10, 100, 1,000, 10,000 inside the domain plus the maximum;
+// a power of ten within 30% of the bar of the maximum is left off so labels never touch
+function rampLegend(max) {
+  if (!(max > 0)) return '';
+  const pos = n => max > 1 ? 100 * Math.log10(n) / Math.log10(max) : 0;
+  const ticks = [1, 10, 100, 1000, 10000].filter(t => t < max && (t === 1 || pos(max) - pos(t) >= 30)).concat([max]);
+  const uniq = ticks.filter((t, i) => ticks.indexOf(t) === i);
+  const stops = RAMP_STOPS.map((c, i) => `${c} ${Math.round(100 * i / (RAMP_STOPS.length - 1))}%`).join(', ');
+  const lab = t => { const p = pos(t); return `<span class="tk ${p < 12 ? 'l' : p > 88 ? 'r' : 'c'}" style="left:${p.toFixed(1)}%">${fmt(t)}</span>`; };
+  return `<div class="rampbox" role="img" aria-label="Colour scale on a log scale, from ${fmt(1)} in blue to ${fmt(max)} in red"><div class="rampbar" style="background:linear-gradient(to right, ${stops})"></div><div class="rampticks">${uniq.map(lab).join('')}</div></div>`;
 }
 
 // ---- shaded units: polygons (state, court, county), bubbles (city, ZIP), hexagons; hover highlight; ranked table ----
-let shade = null, blabels = null, hex = null, shadeBr = [], unitLayers = {}, levelUnits = null, hlKey = null, tapped = null, rankedAll = false;
+let shade = null, blabels = null, hex = null, shadeMax = 0, unitLayers = {}, levelUnits = null, hlKey = null, tapped = null, rankedAll = false;
 const HLS = {color: '#ffffff', weight: 2.5, opacity: 1, fillOpacity: 1};
 const baseOf = l => ({fillColor: l.options.fillColor, fillOpacity: l.options.fillOpacity, color: l.options.color, weight: l.options.weight, opacity: l.options.opacity});
 const mixHtml = u => cur.mixCols().filter(([g]) => u.mix[g]).map(([g, lab]) => `${COL[g] ? icon(g, 12) + ' ' : ''}${esc(lab)}: ${fmt(u.mix[g])}`).join('<br>');
@@ -1828,24 +1748,24 @@ function zoomTo(k, level, at) {
 }
 function drawPolys(level) {
   levelUnits = cur.unitCounts(level); const U = levelUnits.units, n = {}; Object.keys(U).forEach(k => n[k] = U[k].n);
-  shadeBr = breaks(Object.values(n)); const cols = rampFor(shadeBr);
+  shadeMax = maxOf(Object.values(n));
   // court: one dissolved shape per district (court_shapes, every county of the court), so a court has no holes
   const feats = level === 'state' ? D.state_shapes : level === 'court' ? (D.court_shapes || D.county_shapes) : D.county_shapes;
   const keyOf = level === 'state' ? f => f.properties.fips : level === 'court' ? f => f.properties.district || NONE : f => f.properties.geoid;
   shade = L.geoJSON(feats, {renderer: shadeR, pane: 'shade',
-    style: f => { const v = n[keyOf(f)] || 0; return v ? {fillColor: cols[classOf(v, shadeBr)], fillOpacity: .9, color: '#0d0d0d', weight: .6, opacity: .7} : {fillOpacity: 0, opacity: 0, weight: 0}; },
+    style: f => { const v = n[keyOf(f)] || 0; return v ? {fillColor: colorOf(v, shadeMax), fillOpacity: .9, color: '#0d0d0d', weight: .6, opacity: .7} : {fillOpacity: 0, opacity: 0, weight: 0}; },
     onEachFeature: (f, l) => { const k = keyOf(f), u = U[k]; if (!u) return; wireUnit(l, k, u, level); }
   }).addTo(map);
 }
 function drawBubbles(level) {
   levelUnits = cur.unitCounts(level); const U = levelUnits.units;
-  const vals = Object.values(U).map(u => u.n); shadeBr = breaks(vals); const cols = rampFor(shadeBr);
-  const max = Math.max(...vals, 1);
+  const vals = Object.values(U).map(u => u.n); shadeMax = maxOf(vals);
+  const max = Math.max(shadeMax, 1);
   shade = L.layerGroup(); blabels = L.layerGroup(); blabelItems = [];
   Object.keys(U).sort((a, b) => U[b].n - U[a].n).forEach(k => {   // biggest first, so the small ones stay on top and clickable
     const u = U[k]; if (!u.latlng) return;
     const r = 6 + 34 * Math.sqrt(u.n / max);
-    const c = L.circleMarker(u.latlng, {renderer: shadeR, pane: 'shade', radius: r, fillColor: cols[classOf(u.n, shadeBr)], fillOpacity: .85, color: '#0d0d0d', weight: 1, opacity: .8});
+    const c = L.circleMarker(u.latlng, {renderer: shadeR, pane: 'shade', radius: r, fillColor: colorOf(u.n, shadeMax), fillOpacity: .85, color: '#0d0d0d', weight: 1, opacity: .8});
     wireUnit(c, k, u, level); shade.addLayer(c);
     if (r >= 14) blabelItems.push({latlng: u.latlng, text: fmtShort(u.n)});
   });
@@ -1893,10 +1813,10 @@ function drawHex() {
     if (it.ids) { b.ids = b.ids || new Set(); it.ids.forEach(x => b.ids.add(x)); }
     if (it.m) { b.m = b.m || new Set(); it.m.forEach(x => b.m.add(x)); } });
   const list = Object.values(bins); list.forEach(b => { b.n = b.ids ? b.ids.size : b.c; b.mix = b.g; b.label = 'Hexagon (0.5 mi)' + (b.m && cur.key === 'filings' ? `, ${fmt(b.m.size)} medallion${b.m.size !== 1 ? 's' : ''}` : ''); });
-  shadeBr = breaks(list.map(b => b.n)); const cols = rampFor(shadeBr);
+  shadeMax = maxOf(list.map(b => b.n));
   levelUnits = null;
   hex = L.layerGroup(list.map(b => {
-    const pg = L.polygon(hexPoly(b.q, b.r), {renderer: shadeR, pane: 'shade', fillColor: cols[classOf(b.n, shadeBr)], fillOpacity: .9, color: '#0d0d0d', weight: .5, opacity: .6});
+    const pg = L.polygon(hexPoly(b.q, b.r), {renderer: shadeR, pane: 'shade', fillColor: colorOf(b.n, shadeMax), fillOpacity: .9, color: '#0d0d0d', weight: .5, opacity: .6});
     wireUnit(pg, b.q + ',' + b.r, b, 'hex');
     return pg;
   }));
@@ -2015,9 +1935,11 @@ function buildMarkers() {
   markers = [];
   D.points.forEach(p => {
     const g = gOf(p), c = COL[g], r = SIZE[g] || 6;
+    // exact: filled; approximate: half filled; ZIP area only: a ring; city area only (pass 9): a dashed ring
     const st = p[9] === 'exact' ? {fillOpacity: .9, weight: 1, radius: r, color: '#0d0d0d'}
-      : p[9] === 'approximate' ? {fillOpacity: .45, weight: 1.2, radius: r, color: c} : {fillOpacity: 0, weight: 2, radius: r + 1, color: c};
-    if (g === 'agent' && p[9] !== 'ZIP-level') Object.assign(st, {color: '#f0efec', weight: 1.6});
+      : p[9] === 'approximate' ? {fillOpacity: .45, weight: 1.2, radius: r, color: c}
+      : p[9] === 'city-level' ? {fillOpacity: 0, weight: 1.6, radius: r + 1, color: c, dashArray: '3 3'} : {fillOpacity: 0, weight: 2, radius: r + 1, color: c};
+    if (g === 'agent' && p[9] !== 'ZIP-level' && p[9] !== 'city-level') Object.assign(st, {color: '#f0efec', weight: 1.6});
     const m = new ShapeMarker([p[1], p[2]], Object.assign({fillColor: c, shape: SHAPE[g], grp: g}, st));
     m.bindPopup(() => popup(p), popOpts(340));
     m._fp = p; m._vis = false;
@@ -2059,10 +1981,10 @@ const OWNERS = {
   },
   zipCities: () => ownZipCities || (ownZipCities = topCityPerZip(D.points, ownZip, ownCity)),
   ensureMarkers: buildMarkers, refresh: refreshPoints, cluster: clu,
-  legend(m, br) {
+  legend(m, max) {
     if (m === 'points') return `<div class="mt">Every address on file</div>` + G.filter(g => sel.has(g)).map(g => `<div class="sw">${icon(g, 14)} ${esc(LABEL[g])}</div>`).join('') + `<div class="hint">A ring means several addresses; its colours show the group mix</div>`;
-    return `<div class="mt">${nameWord().charAt(0).toUpperCase() + nameWord().slice(1)} per ${m === 'hex' ? 'hexagon (0.5 mi)' : UNIT[m]}, ${MEAS[measure]}</div>` + scaleRows(br).map(([c, t]) => `<div class="sw"><i style="background:${c}"></i>${t}</div>`).join('')
-      + `<div class="hint">Colour shows the count only, blue lowest to red highest. ${m === 'hex' ? 'Zoom in for each address.' : m === 'city' || m === 'zip' ? 'Click a bubble to zoom to it.' : 'Click a shape to zoom to it.'}</div>`;
+    return `<div class="mt">${nameWord().charAt(0).toUpperCase() + nameWord().slice(1)} per ${m === 'hex' ? 'hexagon (0.5 mi)' : UNIT[m]}, ${MEAS[measure]}</div>` + rampLegend(max)
+      + `<div class="hint">Colour shows the count only, on a log scale: blue lowest, red highest. ${m === 'hex' ? 'Zoom in for each address.' : m === 'city' || m === 'zip' ? 'Click a bubble to zoom to it.' : 'Click a shape to zoom to it.'}</div>`;
   },
   note(m) {
     const meas = measure === 'latest' ? 'Each owner counts once, at its most recent address.' : 'An owner counts once in every unit where it has an address.';
@@ -2070,7 +1992,7 @@ const OWNERS = {
       state: ['Each state is shaded by its number of owners.', meas, 'Hover a state to see its count; click it to zoom.'],
       court: ['Each bankruptcy court is shaded by its number of owners, as one shape. Dashed lines mark the court boundaries.', meas, 'Hover to see the court, its area and its count; click to zoom to the court.'],
       county: ['Each county is shaded by its number of owners.', meas, 'Hover a county to see its count; click it to zoom.'],
-      city: ['One bubble per city. Size and colour show the number of owners.', meas, 'The city comes from the Census address match, else from the filing with spellings merged. Click a bubble to zoom.'],
+      city: ['One bubble per city. Size and colour show the number of owners.', meas, 'The city comes from the Census address match, else from the filing (spellings merged, checked against the ZIP). Click a bubble to zoom.'],
       zip: ['One bubble per ZIP code. Size and colour show the number of owners.', meas, 'Each bubble sits at the centre of the Census ZIP area, else at the mean of its addresses. Click a bubble to zoom.'],
       hex: ['Hexagons about half a mile across, shaded by their number of owners.', meas, 'Click a hexagon, or zoom in, to see each address.'],
       points: ['Street level: every address on file for each owner, one shape per group.', 'Owners are blue, lenders orange, agents teal; the shape names the group.', 'Click a shape to see the name, address, court, source and merged spellings.']
@@ -2087,9 +2009,9 @@ legend.addTo(map);
 // on a phone the legend sits bottom-left, where a tall popup ends: hide it while a popup is open
 map.on('popupopen', () => { if (PHONE()) legend.getContainer().style.display = 'none'; });
 map.on('popupclose', () => { legend.getContainer().style.display = ''; });
-function drawLegend() { legend.getContainer().innerHTML = cur.ready ? cur.legend(mode, shadeBr) : '<div class="mt">Loading the lien filings…</div>'; }
+function drawLegend() { legend.getContainer().innerHTML = cur.ready ? cur.legend(mode, shadeMax) : '<div class="mt">Loading the lien filings…</div>'; }
 function clearLayers() {
-  unhl(); tapped = null; unitLayers = {}; levelUnits = null; shadeBr = [];
+  unhl(); tapped = null; unitLayers = {}; levelUnits = null; shadeMax = 0;
   [shade, blabels, hex].forEach(l => { if (l) map.removeLayer(l); }); shade = blabels = hex = null;
   [OWNERS.cluster, FILINGS && FILINGS.cluster].forEach(c => { if (c && map.hasLayer(c)) map.removeLayer(c); });
 }
@@ -2137,9 +2059,14 @@ $('srcsel').innerHTML = [['Lexis', 'Lexis only'], ['dos', 'NYS DOS only'], ['bot
 $('srcsel').querySelectorAll('input').forEach(i => i.addEventListener('change', () => { srcOn[i.dataset.src] = i.checked; refreshPoints(); setStatus(); }));
 $('atagent_n').textContent = fmt(ownPts.filter(isAtAgent).length) + ' addresses';
 $('atagent').addEventListener('change', () => { refreshPoints(); setStatus(); });
-const prec = (fo) => `<svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="#c3c2b7" fill-opacity="${fo}" stroke="#c3c2b7" stroke-width="${fo ? 1 : 2}"/></svg>`;
-$('preclegend').innerHTML = `<span>${prec(.9)} exact</span><span>${prec(.45)} approximate</span><span>${prec(0)} ZIP area only</span>`;
+const prec = (fo, dash) => `<svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="#c3c2b7" fill-opacity="${fo}" stroke="#c3c2b7" stroke-width="${fo ? 1 : dash ? 1.6 : 2}"${dash ? ' stroke-dasharray="3 2.5"' : ''}/></svg>`;
+$('preclegend').innerHTML = `<span>${prec(.9)} exact</span><span>${prec(.45)} approximate</span><span>${prec(0)} ZIP area only</span><span>${prec(0, true)} city area only</span>`;
 $('fpreclegend').innerHTML = $('preclegend').innerHTML;
+// the fourth tier's rule, under the legend in the owners view (the filings view fills #fprecNote the same way)
+(function tierNote() {
+  const gp = (D.geocode || {}).precision || {};
+  $('precNote').textContent = `Addresses the Census could not place sit at the middle of our matched addresses in the same ZIP (3 or more of them), else in the same city, else at the Census point for that city. ${fmt(gp['city-level'] || 0)} are city area only. ${fmt(gp.unmapped || 0)} stay off the map.`;
+})();
 
 // district lines and labels
 const dl = L.layerGroup(), dlab = L.layerGroup(), dlabPA = L.layerGroup();
@@ -2203,98 +2130,11 @@ res.addEventListener('click', e => {
   clu.zoomToShowLayer(m, () => m.openPopup());
 });
 
-// ---- details and method (owners) ----
-(function method() {
-  const RG = {}; (D.regroup || []).forEach(([a, b, n]) => { RG[a + '>' + b] = n; });
-  const EX = {}; (D.excluded || []).forEach(x => EX[x.group] = x);
-  const lsS = D.lender_stats || {}, dd = D.dos_owner_dropped || {}, gd = D.guard_dropped || {}, geo = D.geocode, gp = geo.precision, bs = D.links.by_source;
-  const lt = byG.lender.med_tier_points || {};
-  const DROP = {no_medallion: 'the Lexis lien names no medallion', not_on_lexis: 'the lien is not on Lexis', other_medallion: 'the Lexis lien names only other owners\' medallions'};
-  const GUARD = {lender_as_debtor: 'the debtor is itself a lender', care_of_lender: 'the debtor name carries C/O a lender, so the address is the lender\'s', lender_address: 'the debtor address equals a lender\'s address on the same filing'};
-  const anyOut = ['individual', 'llc', 'company_other', 'owners_all', 'lender', 'lender_spv', 'agent'].map(g => `${g === 'owners_all' ? 'All owners' : esc(byG[g].label)}: ${fmt(byG[g].ever.any_outside)}`);
-  const zips = g => (byG[g].top_zips || []).map(z => `${z[0]} ${esc(z[2])} (${fmt(z[1])})`).join(', ');
-  const chg = Object.entries(CC.pairs || {}).slice(0, 4).map(([k, v]) => `${esc(k.split(' -> ').map(courtFull).join(' to '))} ${fmt(v)}`).join('; ');
-  const ind = byG.individual;
-  const S = [
-    ['Sources', [
-      'Lexis = LexisNexis UCC lien records; NYS DOS = New York Department of State; TLC = NYC Taxi and Limousine Commission',
-      `TLC owner lists: ${fmt(own.names_on_list)} entries after the group rules (individuals and companies)`,
-      `Lexis UCC: ${fmt(bs['Lexis'])} records <span class="src">Lexis</span>`,
-      `NYS DOS UCC: version 1 ${fmt(bs['DOS v1'])} liens, version 2 ${fmt(bs['DOS v2'])} liens <span class="src">NYS DOS</span>`,
-      `NYS DOS corporations: service-of-process addresses of series LLCs <span class="src">NYS DOS</span>`,
-      `TLC managing-agent lists, ${D.agent_years ? D.agent_years.join(' to ') : 'years not recorded'} <span class="src">TLC</span>`,
-      'Names match when they are identical, share the same words in any order, or one is a subset of the other']],
-    ['Which address counts', [
-      'Every address on file (the default): every address the name has on the map, in any year. A name counts once in every unit where it has an address',
-      'Most recent address: the address on the newest filing of any kind (a continuation or termination counts, and so does a managing-agent office)',
-      'On the same date, a NY or NJ address comes first, then the address with more records',
-      `Owners whose newest address is an agent office: ${fmt(own.latest_at_agent)}. ${fmt(own.only_agent_address)} of them have no other address`,
-      `Counting the newest filing of any kind, rather than the newest filing not at an agent office, moves ${fmt(CC.changed)} of ${fmt(CC.of)} owners to another court. The largest moves: ${chg}`,
-      'Agent office: an address that matches a TLC managing agent\'s address after ignoring C/O, house-number hyphens (54-11 = 5411) and ordinals (44TH = 44)',
-      `Owner addresses are UCC debtor addresses at the filing date. The median filing year is ${D.median_filing_year}`,
-      'Lenders: the secured-party address on the lien (head office, not where loans were made)',
-      'Series LLCs: a servicer office (service-of-process address), not an owner location',
-      'Agents: the TLC managing-agent office, not an owner address']],
-    ['Group by: how the map units are built', GROUPBY],
-    ['People behind the names', [
-      'The TLC owner lists give one entry per name, so two people with one name appear as one entry',
-      `Individual entries with 2 or more medallions: ${fmt(PS.rows_tested)}. An entry is split when the liens on its medallions, inside each holding period, sit at addresses that never coincide while the medallions were held at the same time`,
-      `Split: ${fmt(PS.rows_split)} entries into ${fmt(PS.people_from_split)} people (largest ${fmt(PS.max_people_in_row)}). Not split, may be more than one person: ${fmt(PS.rows_maybe_multi)} entries`,
-      `Addresses shared by 5 or more owner entries (garages, agent offices), ${fmt(PS.hub_keys)} in all, never tell people apart`,
-      `A medallion with no filing inside its holding dates appears under the entry's first person, marked "placed by default" (${fmt(PS.links_placed_by_default)} links)`,
-      `Individuals: ${fmt(ind.names_on_list)} entries, about ${fmt(ind.people_est)} people. Companies are never split`]],
-    ['One point per address', [
-      'Spellings of one address merge into one point. C/O, house-number hyphens, ordinals, unit designators, a suffix glued to the number (34ST = 34 ST) and a trailing unit (1G) are removed; the ZIP stays',
-      `All owners: ${fmt(own.spellings_mapped)} spellings merged into ${fmt(own.points_mapped)} points at ${fmt(own.places_mapped)} distinct addresses`,
-      'The point takes the coordinates of its best-matched spelling. The popup lists every spelling with its source',
-      `Points by source (owners): Lexis only ${fmt(srcN.Lexis)}, NYS DOS only ${fmt(srcN.dos)}, both ${fmt(srcN.both)}`]],
-    ['What is kept and what is dropped', [
-      'Lexis owner rows: the lien collateral names the owner\'s own medallion and the name matches',
-      'NYS DOS rows: kept only when the lien, looked up on Lexis by filing number, names a medallion on the owner\'s own list',
-      `Filing numbers: NYS DOS numbers before 2003 have 6 digits, and Lexis adds the 2-digit filing year (DOS 030259, 2002 = Lexis 02030259). ${fmt(lsS.dos_owner_lien_keys_normalised)} NYS DOS rows matched that way`,
-      `NYS DOS rows kept: ${fmt(dd.rows_kept)}. Dropped: ${fmt(dd.rows)}<ul>${Object.entries(dd.by_test || {}).map(([k, v]) => `<li>${esc(DROP[k] || k)}: ${fmt(v)}</li>`).join('')}</ul>`,
-      `Debtor-address checks shared with the medallions view dropped ${fmt(gd.rows)} link rows and ${fmt(gd.owner_addresses)} owner-address spellings. ${fmt(gd.owner_addresses_only_guarded)} of those spellings (${fmt(gd.places_only_guarded)} addresses) have no other row<ul>${Object.entries(gd.by_guard || {}).map(([k, v]) => `<li>${esc(GUARD[k] || k)}: ${fmt(v)}</li>`).join('')}</ul>`,
-      'Debtor addresses on Lexis records are read strictly: an address ends at a blank line or the next label, so no street from one label joins a ZIP from another',
-      `Lenders: a lender stays when its lien passes the medallion check on Lexis. ${fmt(D.lender_links_dropped)} lien-party rows were dropped`,
-      `Lender points by medallion check: the lien names a medallion ${fmt(lt.lien || 0)}; the lender mostly makes medallion loans ${fmt(lt.family || 0)}; Lexis says not a medallion loan but kept ${fmt(lt.c2 || 0)}`]],
-    ['Who is in each group', [
-      ...G.map(g => `${esc(LABEL[g])}: ${esc(GLOSS[g])}`),
-      `Names on the individuals list that carry a company word (LIMITED, INCORPORATED, TRANS, MOTOR, SYSTEM, ASSETS, L.L.C.) move to companies: ${fmt((RG['individual>llc'] || 0) + (RG['individual>company_other'] || 0))}`,
-      `Names on the companies list marked "(IN LIVING TRUST)" move to individuals: ${fmt(RG['company_other>individual'] || 0)}`,
-      'LLC means LLC, L.L.C. or LIMITED LIABILITY anywhere in the name',
-      `The LLC group includes ${fmt(byG.llc.acq_on_list)} medallion-number ACQUISITION LLCs (${fmt(byG.llc.acq_mapped)} mapped)`,
-      `Kept out of the owner groups: lender-held series LLCs (LATKA, SIMKA, WHEELER, BANTA, REIGER, GRAVAS, IGNATOWSKI), ${fmt(EX.excl_series && EX.excl_series.names_on_list)} names`,
-      `Also kept out: LOMTO FEDERAL CREDIT UNION (a lender), ${fmt(EX.excl_lender && EX.excl_lender.names_on_list)}; TLC and auction placeholders, ${fmt(EX.non_owner && EX.non_owner.names_on_list)}`,
-      `The series LLC group holds ${fmt(lsS.spv_series)} series LLCs that hold a medallion plus ${fmt(lsS.spv_no_medallion)} DePalma acquisition vehicles`,
-      `Agents: ${fmt(D.agents.entities_before)} agent entries merged into ${fmt(D.agents.entities_after)} names`,
-      `Filing agents and the IRS are not lenders. ${fmt(lsS.agent_only_liens)} liens name only a filing agent`]],
-    ['Addresses outside NY and NJ', [
-      'Names with at least one mapped address, in any year, outside the New York and New Jersey courts',
-      ...anyOut]],
-    ['Geocoding and courts', [
-      `US Census batch geocoder, ${fmt(geo.addresses)} addresses: exact ${pct1(gp.exact, geo.addresses)}, approximate ${pct1(gp.approximate, geo.addresses)}, ZIP area only ${pct1(gp['ZIP-level'], geo.addresses)}, unmapped ${fmt(gp.unmapped || 0)}`,
-      'A Census match outside the filed state is dropped when it sits far from the filed ZIP',
-      'Court: each county belongs to a federal district under 28 U.S.C. 81 to 131, and each bankruptcy court sits in its district',
-      `Most common ZIP codes of the newest address, individual owners: ${zips('individual')}`,
-      `Companies (other): ${zips('company_other')}`]],
-    ['Map views', [
-      `Auto: at zoom ${Z_HEX - 1} and out the map shades counties; at zoom ${Z_HEX} to ${Z_PTS - 1} it shows hexagons about half a mile across; at zoom ${Z_PTS} and in it shows every address, one shape per group`,
-      'Group by holds one level at every zoom: State, Court, County, City, ZIP, Hexagon or Address',
-      'Group colours: owners blue, lenders orange, agents teal. Shades and shapes split each family and stay readable for colour-blind viewers. The blue-to-red scale on shaded units is a count, not a group',
-      'Basemap: OpenStreetMap, darkened']],
-    ['Open questions', [
-      `Lexis says not a medallion loan, yet the lender mostly makes medallion loans: ${fmt(lt.c2 || 0)} lender points kept`,
-      'Misspelled lender names (Mega Fundig, Banco Poular and others) are not yet merged',
-      `ACQUISITION LLCs: ${fmt(byG.llc.acq_on_list)} on the list; who controls them is not established`,
-      'Individual owners whose name matches a lender (seller financing or namesakes) are not tagged',
-      `${fmt(PS.rows_maybe_multi)} entries may be more than one person; the lien addresses cannot say`]]
-  ];
-  $('methodBody').innerHTML = S.map(([h, xs]) => `<section><h3>${h}</h3><ul class="b">${xs.map(x => `<li>${x}</li>`).join('')}</ul></section>`).join('');
-  $('foot').innerHTML = `Figure 116, built 2026-10-12 17:23. Visits are counted with GoatCounter, which sets no cookies.`;
-})();
+// ---- footer (the owners Details box was removed in pass 9, William 2026-10-13) ----
+$('foot').innerHTML = `Figure 116, built 2026-10-13 01:35. Visits are counted with GoatCounter, which sets no cookies.`;
 
 // ---- the medallions-with-liens view (its code is in the inlined module; its data file loads on page load) ----
-FILINGS = window.FIG116_FILINGS ? window.FIG116_FILINGS({L, map, D, fmt, pct1, pct0, esc, $, courtName, courtFull, courtArea, courtTip, DI, NONE, DC, COL, SHAPE, LABEL, icon, ShapeMarker, makeCluster, proj, scaleRows, barRows, setMode, setStatus, updateAll, Z_PTS, RAMP, popOpts, unitKey, addUnit, finishUnits, cityLabel, topCityPerZip, UNIT, MEAS, GROUPBY, indexCounties, levelUnitsCount, linesR, hexCount: () => hex ? hex.getLayers().length : 0, dataFile: '116_owner_lender_locations_map_filings.js'}) : null;
+FILINGS = window.FIG116_FILINGS ? window.FIG116_FILINGS({L, map, D, fmt, pct1, pct0, esc, $, courtName, courtFull, courtArea, courtTip, DI, NONE, DC, COL, SHAPE, LABEL, icon, ShapeMarker, makeCluster, proj, barRows, setMode, setStatus, updateAll, Z_PTS, rampLegend, popOpts, unitKey, addUnit, finishUnits, cityLabel, topCityPerZip, UNIT, MEAS, indexCounties, levelUnitsCount, linesR, hexCount: () => hex ? hex.getLayers().length : 0, dataFile: '116_owner_lender_locations_map_filings.js'}) : null;
 
 function setView(v) {
   const want = v === 'filings' && FILINGS ? FILINGS : OWNERS;
@@ -2309,10 +2149,20 @@ function setView(v) {
 }
 $('viewsw').querySelectorAll('button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
 
+// one-line explanations on the Count and Measure buttons (data-tip): shown on hover, focus and long press; Esc hides
+(function () {
+  const tip = document.createElement('div'); tip.className = 'btip'; tip.setAttribute('role', 'tooltip'); tip.hidden = true; document.body.appendChild(tip);
+  const show = b => { tip.textContent = b.dataset.tip; tip.hidden = false; const r = b.getBoundingClientRect(), w = tip.offsetWidth;
+    tip.style.left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + 'px'; tip.style.top = (r.bottom + 6) + 'px'; };
+  const hide = () => { tip.hidden = true; };
+  document.querySelectorAll('button[data-tip]').forEach(b => { b.addEventListener('mouseenter', () => show(b)); b.addEventListener('focus', () => { if (b.matches(':focus-visible')) show(b); });
+    b.addEventListener('mouseleave', hide); b.addEventListener('blur', hide); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+})();
 drawBars();
 setLevel('auto');
 setView(FILINGS ? 'filings' : 'owners');
-window.FIG116_VIEW = {map, clu, setMode, setView, setLevel, get mode() { return mode; }, get pin() { return pin; }, get view() { return cur.key; }, get units() { return levelUnits; }, get labelItems() { return blabelItems.length; }, buildMarkers, sel, updateAll, hl, unhl, zoomTo, breaks, layersOf: k => unitLayers[k] || [], filings: FILINGS};   // handle for headless checks
+window.FIG116_VIEW = {map, clu, setMode, setView, setLevel, get mode() { return mode; }, get pin() { return pin; }, get view() { return cur.key; }, get units() { return levelUnits; }, get labelItems() { return blabelItems.length; }, buildMarkers, sel, updateAll, hl, unhl, zoomTo, colorOf, layersOf: k => unitLayers[k] || [], filings: FILINGS};   // handle for headless checks
 })();
 </script>
 </body>
